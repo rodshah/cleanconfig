@@ -1,0 +1,135 @@
+plugins {
+    id 'java-library' apply false
+    id 'maven-publish' apply false
+    id 'signing' apply false
+    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    id 'com.github.spotbugs' version '5.0.14' apply false
+    id 'checkstyle' apply false
+    id 'jacoco' apply false
+}
+
+allprojects {
+    group = 'com.cleanconfig'
+    version = '0.1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'checkstyle'
+    apply plugin: 'jacoco'
+    apply plugin: 'com.github.spotbugs'
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    dependencies {
+        // SLF4J API (compile-only, users provide implementation)
+        compileOnly 'org.slf4j:slf4j-api:1.7.36'
+
+        // Test dependencies
+        testImplementation 'junit:junit:4.13.2'
+        testImplementation 'org.assertj:assertj-core:3.24.2'
+        testImplementation 'org.mockito:mockito-core:4.11.0'
+
+        // SLF4J simple implementation for tests
+        testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+    }
+
+    // JaCoCo configuration
+    jacoco {
+        toolVersion = "0.8.9"
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.required = true
+            html.required = true
+        }
+    }
+
+    test {
+        finalizedBy jacocoTestReport
+
+        // Show test output
+        testLogging {
+            events "passed", "skipped", "failed"
+            exceptionFormat "full"
+        }
+    }
+
+    // Checkstyle configuration
+    checkstyle {
+        toolVersion = '10.12.0'
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    }
+
+    // SpotBugs configuration
+    spotbugs {
+        toolVersion = '4.7.3'
+    }
+
+    // Publishing configuration
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                pom {
+                    name = project.name
+                    description = 'Type-safe property management library for Java 8+'
+                    url = 'https://github.com/rodshah/cleanconfig'
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'rodshah'
+                            name = 'Rohan Shah'
+                            email = 'your.email@example.com'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/rodshah/cleanconfig.git'
+                        developerConnection = 'scm:git:ssh://github.com/rodshah/cleanconfig.git'
+                        url = 'https://github.com/rodshah/cleanconfig'
+                    }
+                }
+            }
+        }
+    }
+
+    // Signing configuration
+    signing {
+        required = { gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.mavenJava
+    }
+
+    // Java compilation options
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+        options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+    }
+
+    // Javadoc options
+    tasks.withType(Javadoc) {
+        options.encoding = 'UTF-8'
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}

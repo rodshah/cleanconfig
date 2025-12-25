@@ -1,0 +1,13 @@
+description = 'CleanConfig Core - Zero-dependency property management'
+
+dependencies {
+    // Core has ZERO external runtime dependencies
+    // Only compile-time dependency on SLF4J API
+    compileOnly 'org.slf4j:slf4j-api:1.7.36'
+
+    // Test dependencies inherited from root build.gradle
+}
+
+// Targeting Java 11
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11

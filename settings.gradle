@@ -1,0 +1,13 @@
+rootProject.name = 'cleanconfig'
+
+include 'cleanconfig-core'
+include 'cleanconfig-serialization'
+include 'cleanconfig-spring-boot-starter'
+include 'cleanconfig-scala'
+include 'cleanconfig-store-api'
+include 'cleanconfig-store-jdbc'
+include 'cleanconfig-cdc'
+include 'cleanconfig-rest-api'
+include 'cleanconfig-rest-spring'
+include 'cleanconfig-cli'
+include 'cleanconfig-examples'
