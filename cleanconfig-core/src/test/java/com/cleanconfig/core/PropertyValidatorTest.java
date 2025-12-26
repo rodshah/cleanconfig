@@ -118,26 +118,4 @@ public class PropertyValidatorTest {
         assertThat(result.getErrors()).hasSize(1);
         assertThat(result.getErrors().get(0).getErrorMessage()).contains("Unknown property");
     }
-
-    @Test
-    public void validate_WithContextType_ReturnsSuccess() {
-        Map<String, String> properties = new HashMap<>();
-        properties.put("user.name", "John Doe");
-        properties.put("user.age", "30");
-
-        ValidationResult result = validator.validate(properties, ValidationContextType.STARTUP);
-
-        assertThat(result.isValid()).isTrue();
-    }
-
-    @Test
-    public void validate_WithDifferentContextType_ReturnsSuccess() {
-        Map<String, String> properties = new HashMap<>();
-        properties.put("user.name", "John Doe");
-        properties.put("user.age", "30");
-
-        ValidationResult result = validator.validate(properties, ValidationContextType.RUNTIME_OVERRIDE);
-
-        assertThat(result.isValid()).isTrue();
-    }
 }

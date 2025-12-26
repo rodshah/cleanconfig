@@ -1,7 +1,6 @@
 package com.cleanconfig.core.validation;
 
 import com.cleanconfig.core.PropertyContext;
-import com.cleanconfig.core.ValidationContextType;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -12,7 +11,6 @@ import java.util.function.Predicate;
  * <p>Conditions allow validation rules to be executed conditionally based on:
  * <ul>
  *   <li>Other property values</li>
- *   <li>Validation context type</li>
  *   <li>Metadata values</li>
  *   <li>Custom predicates</li>
  * </ul>
@@ -25,7 +23,7 @@ import java.util.function.Predicate;
  *
  * // Only require password in production
  * ValidationRule&lt;String&gt; passwordRule = Rules.required()
- *     .onlyIf(Conditions.contextTypeIs(ValidationContextType.PRODUCTION));
+ *     .onlyIf(Conditions.propertyEquals("environment", "production"));
  *
  * // Complex condition using AND/OR
  * ValidationRule&lt;Integer&gt; timeoutRule = Rules.positive()
@@ -150,26 +148,6 @@ public final class Conditions {
         return context -> context.getTypedProperty(propertyName, type)
                 .map(predicate::test)
                 .orElse(false);
-    }
-
-    /**
-     * Creates a condition that checks if the context type matches.
-     *
-     * @param contextType the expected context type
-     * @return condition predicate
-     */
-    public static Predicate<PropertyContext> contextTypeIs(ValidationContextType contextType) {
-        return context -> context.getContextType() == contextType;
-    }
-
-    /**
-     * Creates a condition that checks if the context type is not a specific type.
-     *
-     * @param contextType the forbidden context type
-     * @return condition predicate
-     */
-    public static Predicate<PropertyContext> contextTypeIsNot(ValidationContextType contextType) {
-        return context -> context.getContextType() != contextType;
     }
 
     /**

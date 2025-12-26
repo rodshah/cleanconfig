@@ -30,7 +30,7 @@ import java.util.function.Predicate;
  * // Conditional default
  * ConditionalDefaultValue&lt;String&gt; logLevel =
  *     ConditionalDefaultValue.staticValue("INFO")
- *         .when(ctx -&gt; ctx.getContextType() == ValidationContextType.TESTING, "DEBUG");
+ *         .when(ctx -&gt; ctx.getProperty("environment").orElse("").equals("test"), "DEBUG");
  * </pre>
  *
  * @param <T> the type of the default value

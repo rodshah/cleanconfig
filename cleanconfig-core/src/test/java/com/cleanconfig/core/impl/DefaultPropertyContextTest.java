@@ -1,6 +1,5 @@
 package com.cleanconfig.core.impl;
 
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.converter.TypeConverterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +34,6 @@ public class DefaultPropertyContextTest {
     public void constructor_NullProperties_ThrowsException() {
         assertThatThrownBy(() -> new DefaultPropertyContext(
                 null,
-                ValidationContextType.STARTUP,
                 converterRegistry
         ))
                 .isInstanceOf(NullPointerException.class)
@@ -43,21 +41,9 @@ public class DefaultPropertyContextTest {
     }
 
     @Test
-    public void constructor_NullContextType_ThrowsException() {
-        assertThatThrownBy(() -> new DefaultPropertyContext(
-                properties,
-                null,
-                converterRegistry
-        ))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Context type cannot be null");
-    }
-
-    @Test
     public void constructor_NullConverterRegistry_ThrowsException() {
         assertThatThrownBy(() -> new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 null
         ))
                 .isInstanceOf(NullPointerException.class)
@@ -68,7 +54,6 @@ public class DefaultPropertyContextTest {
     public void constructor_NullMetadata_ThrowsException() {
         assertThatThrownBy(() -> new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry,
                 null
         ))
@@ -80,7 +65,6 @@ public class DefaultPropertyContextTest {
     public void getProperty_ExistingProperty_ReturnsValue() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -94,7 +78,6 @@ public class DefaultPropertyContextTest {
     public void getProperty_NonExistingProperty_ReturnsEmpty() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -107,7 +90,6 @@ public class DefaultPropertyContextTest {
     public void getTypedProperty_StringType_ReturnsConvertedValue() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -121,7 +103,6 @@ public class DefaultPropertyContextTest {
     public void getTypedProperty_IntegerType_ReturnsConvertedValue() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -135,7 +116,6 @@ public class DefaultPropertyContextTest {
     public void getTypedProperty_BooleanType_ReturnsConvertedValue() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -149,7 +129,6 @@ public class DefaultPropertyContextTest {
     public void getTypedProperty_NonExistingProperty_ReturnsEmpty() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -162,7 +141,6 @@ public class DefaultPropertyContextTest {
     public void getTypedProperty_InvalidConversion_ReturnsEmpty() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -175,7 +153,6 @@ public class DefaultPropertyContextTest {
     public void getAllProperties_ReturnsAllProperties() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -191,7 +168,6 @@ public class DefaultPropertyContextTest {
     public void getAllProperties_ReturnsImmutableMap() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -202,35 +178,12 @@ public class DefaultPropertyContextTest {
     }
 
     @Test
-    public void getContextType_ReturnsCorrectType() {
-        DefaultPropertyContext context = new DefaultPropertyContext(
-                properties,
-                ValidationContextType.STARTUP,
-                converterRegistry
-        );
-
-        assertThat(context.getContextType()).isEqualTo(ValidationContextType.STARTUP);
-    }
-
-    @Test
-    public void getContextType_RuntimeOverride_ReturnsCorrectType() {
-        DefaultPropertyContext context = new DefaultPropertyContext(
-                properties,
-                ValidationContextType.RUNTIME_OVERRIDE,
-                converterRegistry
-        );
-
-        assertThat(context.getContextType()).isEqualTo(ValidationContextType.RUNTIME_OVERRIDE);
-    }
-
-    @Test
     public void getMetadata_ExistingKey_ReturnsValue() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("environment", "production");
 
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry,
                 metadata
         );
@@ -245,7 +198,6 @@ public class DefaultPropertyContextTest {
     public void getMetadata_NonExistingKey_ReturnsEmpty() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry,
                 Collections.emptyMap()
         );
@@ -259,7 +211,6 @@ public class DefaultPropertyContextTest {
     public void hasProperty_ExistingProperty_ReturnsTrue() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -270,7 +221,6 @@ public class DefaultPropertyContextTest {
     public void hasProperty_NonExistingProperty_ReturnsFalse() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -281,7 +231,6 @@ public class DefaultPropertyContextTest {
     public void emptyProperties_GetProperty_ReturnsEmpty() {
         DefaultPropertyContext context = new DefaultPropertyContext(
                 Collections.emptyMap(),
-                ValidationContextType.STARTUP,
                 converterRegistry
         );
 
@@ -299,7 +248,6 @@ public class DefaultPropertyContextTest {
 
         DefaultPropertyContext context = new DefaultPropertyContext(
                 properties,
-                ValidationContextType.STARTUP,
                 converterRegistry,
                 metadata
         );

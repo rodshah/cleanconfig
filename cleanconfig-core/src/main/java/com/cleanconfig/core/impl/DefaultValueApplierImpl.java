@@ -7,13 +7,14 @@ import com.cleanconfig.core.DefaultValueApplier;
 import com.cleanconfig.core.PropertyContext;
 import com.cleanconfig.core.PropertyDefinition;
 import com.cleanconfig.core.PropertyRegistry;
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.converter.TypeConverterRegistry;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Default implementation of {@link DefaultValueApplier}.
@@ -55,77 +56,82 @@ public class DefaultValueApplierImpl implements DefaultValueApplier {
 
     @Override
     public DefaultApplicationResult applyDefaults(Map<String, String> userProperties) {
-        return applyDefaults(userProperties, ValidationContextType.STARTUP);
-    }
-
-    @Override
-    public DefaultApplicationResult applyDefaults(
-            Map<String, String> userProperties,
-            ValidationContextType contextType) {
         Objects.requireNonNull(userProperties, "User properties cannot be null");
-        Objects.requireNonNull(contextType, "Context type cannot be null");
 
-        // Create result map (copy of user properties + defaults)
-        Map<String, String> result = new LinkedHashMap<>(userProperties);
+        // Create property context factory
+        Function<Map<String, String>, PropertyContext> contextFactory =
+                props -> new DefaultPropertyContext(props, converterRegistry);
 
-        // Track applied defaults
-        Map<String, String> appliedDefaults = new LinkedHashMap<>();
-
-        // Apply defaults for all properties in the registry
-        for (PropertyDefinition<?> definition : registry.getAllProperties()) {
-            String propertyName = definition.getName();
-
-            // Skip if user provided a value
-            if (userProperties.containsKey(propertyName)) {
-                continue;
-            }
-
-            // Try to apply default value
-            Optional<String> defaultValue = evaluateDefault(definition, result, contextType);
-            if (defaultValue.isPresent()) {
-                result.put(propertyName, defaultValue.get());
-                appliedDefaults.put(propertyName, defaultValue.get());
-            }
-        }
-
-        return new DefaultApplicationResult(result, new DefaultApplicationInfo(appliedDefaults));
+        return applyDefaultsWithContext(userProperties, contextFactory);
     }
 
     /**
-     * Evaluates the default value for a property definition.
+     * Applies defaults using functional composition and immutable transformations.
+     *
+     * @param userProperties the user properties
+     * @param contextFactory factory for creating property contexts
+     * @return the application result
+     */
+    private DefaultApplicationResult applyDefaultsWithContext(
+            Map<String, String> userProperties,
+            Function<Map<String, String>, PropertyContext> contextFactory) {
+
+        // Fold over property definitions, accumulating results
+        Map<String, String> finalProperties = new LinkedHashMap<>(userProperties);
+        Map<String, String> appliedDefaults = new LinkedHashMap<>();
+
+        // Higher-order function: creates default applicator for a single property
+        BiFunction<PropertyDefinition<?>, Map<String, String>, Optional<Map.Entry<String, String>>> applyDefault =
+                (definition, currentProps) -> applyDefaultForProperty(definition, currentProps, contextFactory);
+
+        // Stream-based functional application
+        registry.getAllProperties().stream()
+                .filter(definition -> !userProperties.containsKey(definition.getName()))
+                .forEach(definition -> applyDefault.apply(definition, finalProperties)
+                        .ifPresent(entry -> {
+                            finalProperties.put(entry.getKey(), entry.getValue());
+                            appliedDefaults.put(entry.getKey(), entry.getValue());
+                        }));
+
+        return new DefaultApplicationResult(finalProperties, new DefaultApplicationInfo(appliedDefaults));
+    }
+
+    /**
+     * Higher-order function: applies default for a single property.
      *
      * @param definition the property definition
-     * @param currentProperties the current properties map (may include previously applied defaults)
-     * @param contextType the context type
-     * @param <T> the property value type
-     * @return optional containing the default value as a string, or empty if no default
+     * @param currentProperties current property map
+     * @param contextFactory context factory
+     * @param <T> property type
+     * @return optional entry with property name and default value
      */
-    private <T> Optional<String> evaluateDefault(
+    private <T> Optional<Map.Entry<String, String>> applyDefaultForProperty(
             PropertyDefinition<T> definition,
             Map<String, String> currentProperties,
-            ValidationContextType contextType) {
+            Function<Map<String, String>, PropertyContext> contextFactory) {
 
-        Optional<ConditionalDefaultValue<T>> defaultValueOpt = definition.getDefaultValue();
-        if (!defaultValueOpt.isPresent()) {
-            return Optional.empty();
-        }
+        return definition.getDefaultValue()
+                .flatMap(defaultValue -> evaluateDefault(defaultValue, currentProperties, contextFactory))
+                .map(value -> Map.entry(definition.getName(), value));
+    }
 
-        ConditionalDefaultValue<T> defaultValue = defaultValueOpt.get();
+    /**
+     * Evaluates a conditional default value using monadic composition.
+     *
+     * @param defaultValue the conditional default
+     * @param currentProperties current properties
+     * @param contextFactory context factory
+     * @param <T> property type
+     * @return optional string value
+     */
+    private <T> Optional<String> evaluateDefault(
+            ConditionalDefaultValue<T> defaultValue,
+            Map<String, String> currentProperties,
+            Function<Map<String, String>, PropertyContext> contextFactory) {
 
-        // Create context for evaluating conditional/computed defaults
-        PropertyContext context = new DefaultPropertyContext(
-                currentProperties,
-                contextType,
-                converterRegistry
-        );
-
-        // Evaluate the default value
-        Optional<T> value = defaultValue.computeDefault(context);
-        if (!value.isPresent()) {
-            return Optional.empty();
-        }
-
-        // Convert to string
-        return Optional.of(String.valueOf(value.get()));
+        return Optional.of(currentProperties)
+                .map(contextFactory)
+                .flatMap(defaultValue::computeDefault)
+                .map(String::valueOf);
     }
 }

@@ -1,7 +1,6 @@
 package com.cleanconfig.core.validation;
 
 import com.cleanconfig.core.PropertyContext;
-import com.cleanconfig.core.ValidationContextType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -163,36 +162,6 @@ public class ConditionsTest {
     public void typedPropertyMatches_PredicateFail_ReturnsFalse() {
         context.setTypedProperty("count", 3);
         Predicate<PropertyContext> condition = Conditions.typedPropertyMatches("count", Integer.class, value -> value > 5);
-        assertThat(condition.test(context)).isFalse();
-    }
-
-    // contextTypeIs() tests
-    @Test
-    public void contextTypeIs_MatchingType_ReturnsTrue() {
-        context.setContextType(ValidationContextType.STARTUP);
-        Predicate<PropertyContext> condition = Conditions.contextTypeIs(ValidationContextType.STARTUP);
-        assertThat(condition.test(context)).isTrue();
-    }
-
-    @Test
-    public void contextTypeIs_DifferentType_ReturnsFalse() {
-        context.setContextType(ValidationContextType.TESTING);
-        Predicate<PropertyContext> condition = Conditions.contextTypeIs(ValidationContextType.STARTUP);
-        assertThat(condition.test(context)).isFalse();
-    }
-
-    // contextTypeIsNot() tests
-    @Test
-    public void contextTypeIsNot_DifferentType_ReturnsTrue() {
-        context.setContextType(ValidationContextType.TESTING);
-        Predicate<PropertyContext> condition = Conditions.contextTypeIsNot(ValidationContextType.STARTUP);
-        assertThat(condition.test(context)).isTrue();
-    }
-
-    @Test
-    public void contextTypeIsNot_SameType_ReturnsFalse() {
-        context.setContextType(ValidationContextType.STARTUP);
-        Predicate<PropertyContext> condition = Conditions.contextTypeIsNot(ValidationContextType.STARTUP);
         assertThat(condition.test(context)).isFalse();
     }
 
@@ -405,10 +374,8 @@ public class ConditionsTest {
     public void complexCondition_Works() {
         context.setProperty("ssl.enabled", "true");
         context.setProperty("ssl.port", "443");
-        context.setContextType(ValidationContextType.STARTUP);
 
         Predicate<PropertyContext> condition = Conditions.and(
-                Conditions.contextTypeIs(ValidationContextType.STARTUP),
                 Conditions.propertyIsTrue("ssl.enabled"),
                 Conditions.propertyEquals("ssl.port", "443")
         );
@@ -421,7 +388,6 @@ public class ConditionsTest {
         private final Map<String, String> properties = new HashMap<>();
         private final Map<String, Object> typedProperties = new HashMap<>();
         private final Map<String, String> metadata = new HashMap<>();
-        private ValidationContextType contextType = ValidationContextType.STARTUP;
 
         public void setProperty(String name, String value) {
             properties.put(name, value);
@@ -433,10 +399,6 @@ public class ConditionsTest {
 
         public void setMetadata(String key, String value) {
             metadata.put(key, value);
-        }
-
-        public void setContextType(ValidationContextType type) {
-            this.contextType = type;
         }
 
         @Override
@@ -453,11 +415,6 @@ public class ConditionsTest {
         @Override
         public Map<String, String> getAllProperties() {
             return Collections.unmodifiableMap(properties);
-        }
-
-        @Override
-        public ValidationContextType getContextType() {
-            return contextType;
         }
 
         @Override

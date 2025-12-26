@@ -1,7 +1,6 @@
 package com.cleanconfig.core.validation;
 
 import com.cleanconfig.core.PropertyContext;
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.converter.TypeConverterRegistry;
 import com.cleanconfig.core.impl.DefaultPropertyContext;
 import org.junit.Before;
@@ -23,7 +22,6 @@ public class CompositeRulesTest {
     public void setUp() {
         context = new DefaultPropertyContext(
                 Collections.emptyMap(),
-                ValidationContextType.STARTUP,
                 TypeConverterRegistry.getInstance()
         );
     }

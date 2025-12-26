@@ -1,13 +1,11 @@
 package com.cleanconfig.core.validation;
 
 import com.cleanconfig.core.PropertyContext;
-import com.cleanconfig.core.ValidationContextType;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ValidationRule}.
@@ -19,7 +17,6 @@ public class ValidationRuleTest {
     @Before
     public void setUp() {
         context = Mockito.mock(PropertyContext.class);
-        when(context.getContextType()).thenReturn(ValidationContextType.STARTUP);
     }
 
     @Test
@@ -129,23 +126,6 @@ public class ValidationRuleTest {
         ValidationResult result = conditional.validate("test", "value", context);
 
         assertThat(result.isValid()).isTrue();
-    }
-
-    @Test
-    public void onlyIf_WithContextCheck_WorksCorrectly() {
-        ValidationRule<String> rule = ValidationRule.alwaysFails("Fails in testing");
-        ValidationRule<String> conditional = rule.onlyIf(
-                ctx -> ctx.getContextType() == ValidationContextType.TESTING
-        );
-
-        // Context is STARTUP, so rule should not execute
-        ValidationResult result = conditional.validate("test", "value", context);
-        assertThat(result.isValid()).isTrue();
-
-        // Change context to TESTING
-        when(context.getContextType()).thenReturn(ValidationContextType.TESTING);
-        result = conditional.validate("test", "value", context);
-        assertThat(result.isValid()).isFalse();
     }
 
     @Test

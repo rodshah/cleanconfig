@@ -1,9 +1,7 @@
 package com.cleanconfig.core.impl;
 
-import com.cleanconfig.core.PropertyContext;
 import com.cleanconfig.core.PropertyDefinition;
 import com.cleanconfig.core.PropertyRegistry;
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.validation.Rules;
 import com.cleanconfig.core.validation.ValidationResult;
 import com.cleanconfig.core.validation.ValidationRule;
@@ -44,17 +42,6 @@ public class DefaultPropertyValidatorTest {
         assertThatThrownBy(() -> validator.validate(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Properties cannot be null");
-    }
-
-    @Test
-    public void validate_NullContextType_ThrowsException() {
-        PropertyRegistry registry = PropertyRegistry.builder().build();
-        DefaultPropertyValidator validator = new DefaultPropertyValidator(registry);
-        Map<String, String> properties = new HashMap<>();
-
-        assertThatThrownBy(() -> validator.validate(properties, null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Context type cannot be null");
     }
 
     @Test
@@ -423,61 +410,5 @@ public class DefaultPropertyValidatorTest {
 
         assertThat(result.isValid()).isFalse();
         assertThat(result.getErrors()).hasSize(1);
-    }
-
-    @Test
-    public void validate_ContextTypeStartup_UsesCorrectContext() {
-        ValidationRule<String> contextAwareRule = new ValidationRule<String>() {
-            @Override
-            public ValidationResult validate(String propertyName, String value, PropertyContext context) {
-                assertThat(context.getContextType()).isEqualTo(ValidationContextType.STARTUP);
-                return ValidationResult.success();
-            }
-        };
-
-        PropertyDefinition<String> property = PropertyDefinition.builder(String.class)
-                .name("test.property")
-                .validationRule(contextAwareRule)
-                .build();
-
-        PropertyRegistry registry = PropertyRegistry.builder()
-                .register(property)
-                .build();
-
-        DefaultPropertyValidator validator = new DefaultPropertyValidator(registry);
-        Map<String, String> properties = new HashMap<>();
-        properties.put("test.property", "value");
-
-        ValidationResult result = validator.validate(properties, ValidationContextType.STARTUP);
-
-        assertThat(result.isValid()).isTrue();
-    }
-
-    @Test
-    public void validate_ContextTypeRuntimeOverride_UsesCorrectContext() {
-        ValidationRule<String> contextAwareRule = new ValidationRule<String>() {
-            @Override
-            public ValidationResult validate(String propertyName, String value, PropertyContext context) {
-                assertThat(context.getContextType()).isEqualTo(ValidationContextType.RUNTIME_OVERRIDE);
-                return ValidationResult.success();
-            }
-        };
-
-        PropertyDefinition<String> property = PropertyDefinition.builder(String.class)
-                .name("test.property")
-                .validationRule(contextAwareRule)
-                .build();
-
-        PropertyRegistry registry = PropertyRegistry.builder()
-                .register(property)
-                .build();
-
-        DefaultPropertyValidator validator = new DefaultPropertyValidator(registry);
-        Map<String, String> properties = new HashMap<>();
-        properties.put("test.property", "value");
-
-        ValidationResult result = validator.validate(properties, ValidationContextType.RUNTIME_OVERRIDE);
-
-        assertThat(result.isValid()).isTrue();
     }
 }

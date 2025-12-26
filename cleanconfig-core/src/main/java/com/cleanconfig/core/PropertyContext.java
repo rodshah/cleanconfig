@@ -10,7 +10,6 @@ import java.util.Optional;
  * <ul>
  *   <li>Access the value being validated</li>
  *   <li>Access other property values for cross-property validation</li>
- *   <li>Check the validation context type</li>
  *   <li>Access metadata about the validation environment</li>
  * </ul>
  *
@@ -56,13 +55,6 @@ public interface PropertyContext {
      * @return immutable map of all properties
      */
     Map<String, String> getAllProperties();
-
-    /**
-     * Gets the validation context type.
-     *
-     * @return the context type
-     */
-    ValidationContextType getContextType();
 
     /**
      * Gets a metadata value.

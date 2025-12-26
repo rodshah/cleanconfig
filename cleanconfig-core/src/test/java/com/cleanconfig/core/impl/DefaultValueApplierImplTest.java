@@ -5,7 +5,6 @@ import com.cleanconfig.core.DefaultApplicationInfo;
 import com.cleanconfig.core.DefaultApplicationResult;
 import com.cleanconfig.core.PropertyDefinition;
 import com.cleanconfig.core.PropertyRegistry;
-import com.cleanconfig.core.ValidationContextType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,13 +60,6 @@ public class DefaultValueApplierImplTest {
         assertThatThrownBy(() -> applier.applyDefaults(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("User properties cannot be null");
-    }
-
-    @Test
-    public void applyDefaults_NullContextType_ThrowsException() {
-        assertThatThrownBy(() -> applier.applyDefaults(new HashMap<>(), null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Context type cannot be null");
     }
 
     @Test
@@ -201,20 +193,6 @@ public class DefaultValueApplierImplTest {
         assertThat(result.getPropertiesWithDefaults()).containsEntry("prop1", "default1");
         assertThat(result.getPropertiesWithDefaults()).containsEntry("prop2", "42");
         assertThat(result.getPropertiesWithDefaults()).containsEntry("prop3", "user-value");
-    }
-
-    @Test
-    public void applyDefaults_WithContextType_PassesCorrectContext() {
-        Map<String, String> userProperties = new HashMap<>();
-
-        DefaultApplicationResult result = applier.applyDefaults(
-                userProperties,
-                ValidationContextType.RUNTIME_OVERRIDE
-        );
-
-        // Should still apply defaults
-        assertThat(result.getPropertiesWithDefaults()).containsEntry("prop1", "default1");
-        assertThat(result.getPropertiesWithDefaults()).containsEntry("prop2", "42");
     }
 
     @Test

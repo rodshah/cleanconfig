@@ -48,16 +48,4 @@ public interface DefaultValueApplier {
      * @return result containing properties with defaults and application info
      */
     DefaultApplicationResult applyDefaults(Map<String, String> userProperties);
-
-    /**
-     * Applies default values with a specific context type.
-     *
-     * @param userProperties the user-provided properties
-     * @param contextType the validation context type
-     * @return result containing properties with defaults and application info
-     */
-    DefaultApplicationResult applyDefaults(
-            Map<String, String> userProperties,
-            ValidationContextType contextType
-    );
 }

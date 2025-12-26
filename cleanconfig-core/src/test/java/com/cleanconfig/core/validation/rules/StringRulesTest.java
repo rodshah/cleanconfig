@@ -1,7 +1,6 @@
 package com.cleanconfig.core.validation.rules;
 
 import com.cleanconfig.core.PropertyContext;
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.validation.ValidationResult;
 import com.cleanconfig.core.validation.ValidationRule;
 import org.junit.Before;
@@ -343,11 +342,6 @@ public class StringRulesTest {
         @Override
         public Map<String, String> getAllProperties() {
             return Collections.unmodifiableMap(properties);
-        }
-
-        @Override
-        public ValidationContextType getContextType() {
-            return ValidationContextType.STARTUP;
         }
 
         @Override
