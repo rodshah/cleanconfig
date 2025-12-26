@@ -18,7 +18,7 @@ import java.util.Optional;
  * <pre>
  * ValidationRule&lt;String&gt; cpuLimitRule = (name, value, context) -&gt; {
  *     Optional&lt;String&gt; request = context.getProperty("cpu.request");
- *     if (request.isPresent() && value != null) {
+ *     if (request.isPresent() &amp;&amp; value != null) {
  *         // Compare limit vs request
  *         if (parseCpu(value) &lt; parseCpu(request.get())) {
  *             return ValidationResult.failure(...);
