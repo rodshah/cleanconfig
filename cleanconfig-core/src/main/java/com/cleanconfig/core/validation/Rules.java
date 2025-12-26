@@ -55,22 +55,22 @@ public final class Rules {
     /**
      * Validates that a string is not blank (not null and not empty after trimming).
      *
-     * @param <T> the value type (should extend CharSequence)
+     * 
      * @return validation rule
      * @see StringRules#notBlank()
      */
-    public static <T extends CharSequence> ValidationRule<T> notBlank() {
+    public static ValidationRule<String> notBlank() {
         return StringRules.notBlank();
     }
 
     /**
      * Validates that a string is not empty (not null and length > 0, no trimming).
      *
-     * @param <T> the value type (should extend CharSequence)
+     * 
      * @return validation rule
      * @see StringRules#notEmpty()
      */
-    public static <T extends CharSequence> ValidationRule<T> notEmpty() {
+    public static ValidationRule<String> notEmpty() {
         return StringRules.notEmpty();
     }
 
@@ -78,11 +78,11 @@ public final class Rules {
      * Validates minimum string length.
      *
      * @param minLength minimum length (inclusive)
-     * @param <T> the value type (should extend CharSequence)
+     * 
      * @return validation rule
      * @see StringRules#minLength(int)
      */
-    public static <T extends CharSequence> ValidationRule<T> minLength(int minLength) {
+    public static ValidationRule<String> minLength(int minLength) {
         return StringRules.minLength(minLength);
     }
 
@@ -90,11 +90,11 @@ public final class Rules {
      * Validates maximum string length.
      *
      * @param maxLength maximum length (inclusive)
-     * @param <T> the value type (should extend CharSequence)
+     * 
      * @return validation rule
      * @see StringRules#maxLength(int)
      */
-    public static <T extends CharSequence> ValidationRule<T> maxLength(int maxLength) {
+    public static ValidationRule<String> maxLength(int maxLength) {
         return StringRules.maxLength(maxLength);
     }
 
@@ -103,11 +103,11 @@ public final class Rules {
      *
      * @param minLength minimum length
      * @param maxLength maximum length
-     * @param <T> the value type (should extend CharSequence)
+     * 
      * @return validation rule
      * @see StringRules#lengthBetween(int, int)
      */
-    public static <T extends CharSequence> ValidationRule<T> lengthBetween(int minLength, int maxLength) {
+    public static ValidationRule<String> lengthBetween(int minLength, int maxLength) {
         return StringRules.lengthBetween(minLength, maxLength);
     }
 
