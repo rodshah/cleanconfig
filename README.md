@@ -88,7 +88,9 @@ implementation 'com.propkit:propkit-core:0.1.0'
 ## Documentation
 
 - [Getting Started Guide](docs/getting-started.md) (Coming Soon)
-
+- [Validation Rules](docs/validation-rules.md) ✅
+- [Type Conversion](docs/type-conversion.md) ✅
+- [Logging](docs/logging.md) ✅
 - [API Reference](https://cleanconfig.dev/api) (Coming Soon)
 
 ---
@@ -118,26 +120,24 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ---
 
----
-
----
-
 ## License
 
-PropKit is licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## Author
+## Inspiration
 
-Created and maintained by [Rohan Shah](https://github.com/rodshah)
+CleanConfig is inspired by:
+- The Clean Code movement (Robert C. Martin)
+- FluentValidation (C#)
+- Viper (Go)
+- TypeScript's type system
+
+Built to solve real-world configuration management pain points in large-scale Java applications.
 
 ---
 
-## Acknowledgments
+**Made with ❤️ for the Java community**
 
-Inspired by configuration management needs in distributed systems and the desire for type-safe property handling in Java.
-
----
-
-**⭐ Star this repo to follow our progress!**
+[⭐ Star this repo](https://github.com/rodshah/cleanconfig) | [📖 Documentation](https://cleanconfig.dev) | [🐛 Report Issues](https://github.com/rodshah/cleanconfig/issues)
