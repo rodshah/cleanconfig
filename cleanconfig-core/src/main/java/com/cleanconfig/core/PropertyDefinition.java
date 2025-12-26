@@ -128,4 +128,15 @@ public interface PropertyDefinition<T> {
      * @return optional containing the replacement property name, or empty if none
      */
     Optional<String> getReplacementProperty();
+
+    /**
+     * Creates a new property definition builder.
+     *
+     * @param type the property value type
+     * @param <T> the property value type
+     * @return a new property definition builder
+     */
+    static <T> PropertyDefinitionBuilder<T> builder(Class<T> type) {
+        return PropertyDefinitionBuilder.builder(type);
+    }
 }
