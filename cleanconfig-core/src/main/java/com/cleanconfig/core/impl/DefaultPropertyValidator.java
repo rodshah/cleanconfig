@@ -4,14 +4,12 @@ import com.cleanconfig.core.PropertyContext;
 import com.cleanconfig.core.PropertyDefinition;
 import com.cleanconfig.core.PropertyRegistry;
 import com.cleanconfig.core.PropertyValidator;
-import com.cleanconfig.core.ValidationContextType;
 import com.cleanconfig.core.converter.TypeConverterRegistry;
+import com.cleanconfig.core.validation.PropertyGroup;
 import com.cleanconfig.core.validation.ValidationError;
 import com.cleanconfig.core.validation.ValidationResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -57,37 +55,39 @@ public class DefaultPropertyValidator implements PropertyValidator {
 
     @Override
     public ValidationResult validate(Map<String, String> properties) {
-        return validate(properties, ValidationContextType.STARTUP);
-    }
-
-    @Override
-    public ValidationResult validate(Map<String, String> properties, ValidationContextType contextType) {
         Objects.requireNonNull(properties, "Properties cannot be null");
-        Objects.requireNonNull(contextType, "Context type cannot be null");
 
-        PropertyContext context = new DefaultPropertyContext(properties, contextType, converterRegistry);
-        List<ValidationError> errors = new ArrayList<>();
+        PropertyContext context = new DefaultPropertyContext(properties, converterRegistry);
 
-        // Validate in dependency order
-        for (String propertyName : validationOrder) {
-            registry.getProperty(propertyName).ifPresent(definition -> {
-                String value = properties.get(propertyName);
-                ValidationResult result = validatePropertyInternal(definition, value, context);
-                errors.addAll(result.getErrors());
-            });
-        }
+        // Functional approach: stream over validation order and collect errors
+        List<ValidationError> errors = validationOrder.stream()
+                .map(registry::getProperty)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(definition -> validateProperty(definition, properties.get(definition.getName()), context))
+                .flatMap(result -> result.getErrors().stream())
+                .collect(java.util.stream.Collectors.toList());
 
-        // Validate properties not in registry (unknown properties)
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            if (!registry.isDefined(entry.getKey())) {
-                errors.add(ValidationError.builder()
+        // Validate unknown properties
+        List<ValidationError> unknownErrors = properties.entrySet().stream()
+                .filter(entry -> !registry.isDefined(entry.getKey()))
+                .map(entry -> ValidationError.builder()
                         .propertyName(entry.getKey())
                         .actualValue(entry.getValue())
                         .errorMessage("Unknown property")
                         .expectedValue("Property is not defined in the registry")
-                        .build());
-            }
-        }
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+
+        errors.addAll(unknownErrors);
+
+        // Validate property groups
+        List<ValidationError> groupErrors = registry.getAllPropertyGroups().stream()
+                .map(group -> validatePropertyGroup(group, properties))
+                .flatMap(result -> result.getErrors().stream())
+                .collect(java.util.stream.Collectors.toList());
+
+        errors.addAll(groupErrors);
 
         return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);
     }
@@ -97,10 +97,10 @@ public class DefaultPropertyValidator implements PropertyValidator {
         Objects.requireNonNull(propertyName, "Property name cannot be null");
         Objects.requireNonNull(properties, "Properties cannot be null");
 
-        PropertyContext context = new DefaultPropertyContext(properties, ValidationContextType.STARTUP, converterRegistry);
+        PropertyContext context = new DefaultPropertyContext(properties, converterRegistry);
 
         return registry.getProperty(propertyName)
-                .map(definition -> validatePropertyInternal(definition, value, context))
+                .map(definition -> validateProperty(definition, value, context))
                 .orElseGet(() -> ValidationResult.failure(ValidationError.builder()
                         .propertyName(propertyName)
                         .actualValue(value)
@@ -109,15 +109,34 @@ public class DefaultPropertyValidator implements PropertyValidator {
                         .build()));
     }
 
+    @Override
+    public ValidationResult validatePropertyGroup(PropertyGroup group, Map<String, String> properties) {
+        Objects.requireNonNull(group, "Property group cannot be null");
+        Objects.requireNonNull(properties, "Properties cannot be null");
+
+        PropertyContext context = new DefaultPropertyContext(properties, converterRegistry);
+
+        // Validate all rules in the group
+        List<ValidationError> errors = group.getRules().stream()
+                .map(rule -> rule.validate(
+                        group.getPropertyNames().toArray(new String[0]),
+                        context
+                ))
+                .flatMap(result -> result.getErrors().stream())
+                .collect(java.util.stream.Collectors.toList());
+
+        return errors.isEmpty() ? ValidationResult.success() : ValidationResult.failure(errors);
+    }
+
     /**
-     * Validates a single property value against its definition.
+     * Validates a single property using functional composition.
      */
-    private <T> ValidationResult validatePropertyInternal(
+    private <T> ValidationResult validateProperty(
             PropertyDefinition<T> definition,
             String value,
             PropertyContext context) {
 
-        // Check if required
+        // Check required using Optional pattern
         if (definition.isRequired() && (value == null || value.isEmpty())) {
             return ValidationResult.failure(ValidationError.builder()
                     .propertyName(definition.getName())
@@ -127,65 +146,69 @@ public class DefaultPropertyValidator implements PropertyValidator {
                     .build());
         }
 
-        // Use default if not provided
-        if (value == null || value.isEmpty()) {
-            return ValidationResult.success();
-        }
+        // Use monadic chain for validation
+        return Optional.ofNullable(value)
+                .filter(v -> !v.isEmpty())
+                .flatMap(v -> convertAndValidate(definition, v, context))
+                .orElse(ValidationResult.success());
+    }
+
+    /**
+     * Higher-order function: converts value and applies validation using monadic composition.
+     */
+    private <T> Optional<ValidationResult> convertAndValidate(
+            PropertyDefinition<T> definition,
+            String value,
+            PropertyContext context) {
 
         // Convert value to target type
         Optional<T> convertedValue = converterRegistry.convert(value, definition.getType());
+
         if (!convertedValue.isPresent()) {
-            return ValidationResult.failure(ValidationError.builder()
+            return Optional.of(ValidationResult.failure(ValidationError.builder()
                     .propertyName(definition.getName())
                     .actualValue(value)
                     .errorMessage("Type conversion failed")
                     .expectedValue("Value of type " + definition.getType().getSimpleName())
-                    .build());
+                    .build()));
         }
 
-        // Apply validation rule
-        return definition.getValidationRule()
-                .map(rule -> rule.validate(definition.getName(), convertedValue.get(), context))
-                .orElse(ValidationResult.success());
+        // Apply validation rule using monadic composition
+        return Optional.of(
+                definition.getValidationRule()
+                        .map(rule -> rule.validate(definition.getName(), convertedValue.get(), context))
+                        .orElse(ValidationResult.success())
+        );
     }
 
     /**
      * Computes the validation order using topological sort.
      */
     private List<String> computeValidationOrder() {
-        Map<String, Set<String>> dependencies = new HashMap<>();
-        Set<String> allProperties = new HashSet<>();
+        // Build dependency graph using streams
+        Map<String, Set<String>> dependencies = registry.getAllProperties().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        PropertyDefinition::getName,
+                        definition -> definition.getDependsOnForValidation().stream()
+                                .filter(registry::isDefined)
+                                .collect(java.util.stream.Collectors.toSet())
+                ));
 
-        // Build dependency graph - only include dependencies that exist in the registry
-        for (PropertyDefinition<?> definition : registry.getAllProperties()) {
-            String propertyName = definition.getName();
-            allProperties.add(propertyName);
-
-            Set<String> validDeps = new HashSet<>();
-            for (String dep : definition.getDependsOnForValidation()) {
-                if (registry.isDefined(dep)) {
-                    validDeps.add(dep);
-                }
-            }
-            dependencies.put(propertyName, validDeps);
-        }
+        Set<String> allProperties = registry.getAllPropertyNames().stream()
+                .collect(java.util.stream.Collectors.toSet());
 
         // Topological sort using Kahn's algorithm
         List<String> sorted = new ArrayList<>();
-        Map<String, Integer> inDegree = new HashMap<>();
-
-        // Calculate in-degrees: for each property, count how many dependencies it has
-        for (String property : allProperties) {
-            inDegree.put(property, dependencies.get(property).size());
-        }
+        Map<String, Integer> inDegree = allProperties.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        property -> property,
+                        property -> dependencies.get(property).size()
+                ));
 
         // Queue of nodes with no dependencies (in-degree 0)
-        Queue<String> queue = new LinkedList<>();
-        for (String property : allProperties) {
-            if (inDegree.get(property) == 0) {
-                queue.add(property);
-            }
-        }
+        Queue<String> queue = allProperties.stream()
+                .filter(property -> inDegree.get(property) == 0)
+                .collect(java.util.stream.Collectors.toCollection(LinkedList::new));
 
         // Process queue
         while (!queue.isEmpty()) {
@@ -193,13 +216,14 @@ public class DefaultPropertyValidator implements PropertyValidator {
             sorted.add(current);
 
             // Find all properties that depend on the current property
-            for (String dependent : findDependents(current, dependencies)) {
-                int newDegree = inDegree.get(dependent) - 1;
-                inDegree.put(dependent, newDegree);
-                if (newDegree == 0) {
-                    queue.add(dependent);
-                }
-            }
+            findDependents(current, dependencies).stream()
+                    .forEach(dependent -> {
+                        int newDegree = inDegree.get(dependent) - 1;
+                        inDegree.put(dependent, newDegree);
+                        if (newDegree == 0) {
+                            queue.add(dependent);
+                        }
+                    });
         }
 
         // Check for cycles (should not happen if builder validated correctly)
@@ -215,12 +239,9 @@ public class DefaultPropertyValidator implements PropertyValidator {
      * Finds all properties that depend on the given property.
      */
     private Set<String> findDependents(String property, Map<String, Set<String>> dependencies) {
-        Set<String> dependents = new HashSet<>();
-        for (Map.Entry<String, Set<String>> entry : dependencies.entrySet()) {
-            if (entry.getValue().contains(property)) {
-                dependents.add(entry.getKey());
-            }
-        }
-        return dependents;
+        return dependencies.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(property))
+                .map(Map.Entry::getKey)
+                .collect(java.util.stream.Collectors.toSet());
     }
 }

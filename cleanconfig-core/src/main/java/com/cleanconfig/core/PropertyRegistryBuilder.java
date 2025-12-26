@@ -1,8 +1,9 @@
 package com.cleanconfig.core;
 
+import com.cleanconfig.core.validation.PropertyGroup;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -23,6 +24,7 @@ import java.util.Collections;
  * PropertyRegistry registry = PropertyRegistry.builder()
  *     .register(serverPortProperty)
  *     .register(serverHostProperty)
+ *     .registerGroup(databaseGroup)
  *     .build();
  * </pre>
  *
@@ -31,6 +33,7 @@ import java.util.Collections;
 public class PropertyRegistryBuilder {
 
     private final Map<String, PropertyDefinition<?>> properties = new LinkedHashMap<>();
+    private final Map<String, PropertyGroup> propertyGroups = new LinkedHashMap<>();
 
     /**
      * Registers a property definition.
@@ -54,6 +57,27 @@ public class PropertyRegistryBuilder {
     }
 
     /**
+     * Registers a property group.
+     *
+     * @param group the property group to register
+     * @return this builder
+     * @throws IllegalArgumentException if a group with the same name is already registered
+     * @since 0.2.0
+     */
+    public PropertyRegistryBuilder registerGroup(PropertyGroup group) {
+        Objects.requireNonNull(group, "Property group cannot be null");
+        Objects.requireNonNull(group.getName(), "Group name cannot be null");
+
+        if (propertyGroups.containsKey(group.getName())) {
+            throw new IllegalArgumentException(
+                    "Property group '" + group.getName() + "' is already registered");
+        }
+
+        propertyGroups.put(group.getName(), group);
+        return this;
+    }
+
+    /**
      * Builds the property registry.
      *
      * @return the property registry
@@ -62,56 +86,52 @@ public class PropertyRegistryBuilder {
     public PropertyRegistry build() {
         validateNoDependencies();
         detectCircularDependencies();
-        return new DefaultPropertyRegistry(new LinkedHashMap<>(properties));
+        return new DefaultPropertyRegistry(
+                new LinkedHashMap<>(properties),
+                new LinkedHashMap<>(propertyGroups)
+        );
     }
 
     /**
      * Validates that all dependency references exist.
      */
     private void validateDependencies() {
-        for (PropertyDefinition<?> property : properties.values()) {
-            for (String dependency : property.getDependsOnForValidation()) {
-                if (!properties.containsKey(dependency)) {
-                    throw new IllegalStateException(
-                            "Property '" + property.getName() + "' depends on undefined property '" + dependency + "'");
-                }
-            }
-        }
+        properties.values().stream()
+                .flatMap(property -> property.getDependsOnForValidation().stream()
+                        .filter(dependency -> !properties.containsKey(dependency))
+                        .map(dependency -> new IllegalStateException(
+                                "Property '" + property.getName() + "' depends on undefined property '" + dependency + "'")))
+                .findFirst()
+                .ifPresent(exception -> {
+                    throw exception;
+                });
     }
 
     /**
      * Detects circular dependencies using topological sort.
      */
     private void detectCircularDependencies() {
-        Map<String, Set<String>> dependencies = new HashMap<>();
-        Set<String> allProperties = new HashSet<>();
-
         // Build dependency graph
-        for (PropertyDefinition<?> definition : properties.values()) {
-            String propertyName = definition.getName();
-            allProperties.add(propertyName);
+        Map<String, Set<String>> dependencies = properties.values().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        PropertyDefinition::getName,
+                        definition -> definition.getDependsOnForValidation().stream()
+                                .filter(properties::containsKey)
+                                .collect(java.util.stream.Collectors.toSet())
+                ));
 
-            Set<String> deps = new HashSet<>();
-            for (String dep : definition.getDependsOnForValidation()) {
-                if (properties.containsKey(dep)) {
-                    deps.add(dep);
-                }
-            }
-            dependencies.put(propertyName, deps);
-        }
+        Set<String> allProperties = new HashSet<>(properties.keySet());
 
         // Topological sort using Kahn's algorithm
-        Map<String, Integer> inDegree = new HashMap<>();
-        for (String property : allProperties) {
-            inDegree.put(property, dependencies.get(property).size());
-        }
+        Map<String, Integer> inDegree = allProperties.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        property -> property,
+                        property -> dependencies.get(property).size()
+                ));
 
-        Queue<String> queue = new LinkedList<>();
-        for (String property : allProperties) {
-            if (inDegree.get(property) == 0) {
-                queue.add(property);
-            }
-        }
+        Queue<String> queue = allProperties.stream()
+                .filter(property -> inDegree.get(property) == 0)
+                .collect(java.util.stream.Collectors.toCollection(LinkedList::new));
 
         int processed = 0;
         while (!queue.isEmpty()) {
@@ -119,13 +139,14 @@ public class PropertyRegistryBuilder {
             processed++;
 
             // Find all properties that depend on the current property
-            for (String dependent : findDependents(current, dependencies)) {
-                int newDegree = inDegree.get(dependent) - 1;
-                inDegree.put(dependent, newDegree);
-                if (newDegree == 0) {
-                    queue.add(dependent);
-                }
-            }
+            findDependents(current, dependencies).stream()
+                    .forEach(dependent -> {
+                        int newDegree = inDegree.get(dependent) - 1;
+                        inDegree.put(dependent, newDegree);
+                        if (newDegree == 0) {
+                            queue.add(dependent);
+                        }
+                    });
         }
 
         if (processed != allProperties.size()) {
@@ -151,13 +172,10 @@ public class PropertyRegistryBuilder {
      * Finds all properties that depend on the given property.
      */
     private Set<String> findDependents(String property, Map<String, Set<String>> dependencies) {
-        Set<String> dependents = new HashSet<>();
-        for (Map.Entry<String, Set<String>> entry : dependencies.entrySet()) {
-            if (entry.getValue().contains(property)) {
-                dependents.add(entry.getKey());
-            }
-        }
-        return dependents;
+        return dependencies.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(property))
+                .map(Map.Entry::getKey)
+                .collect(java.util.stream.Collectors.toSet());
     }
 
     /**
@@ -165,9 +183,13 @@ public class PropertyRegistryBuilder {
      */
     private static class DefaultPropertyRegistry implements PropertyRegistry {
         private final Map<String, PropertyDefinition<?>> properties;
+        private final Map<String, PropertyGroup> propertyGroups;
 
-        DefaultPropertyRegistry(Map<String, PropertyDefinition<?>> properties) {
+        DefaultPropertyRegistry(
+                Map<String, PropertyDefinition<?>> properties,
+                Map<String, PropertyGroup> propertyGroups) {
             this.properties = properties;
+            this.propertyGroups = propertyGroups;
         }
 
         @Override
@@ -188,6 +210,16 @@ public class PropertyRegistryBuilder {
         @Override
         public Collection<String> getAllPropertyNames() {
             return Collections.unmodifiableSet(properties.keySet());
+        }
+
+        @Override
+        public Optional<PropertyGroup> getPropertyGroup(String groupName) {
+            return Optional.ofNullable(propertyGroups.get(groupName));
+        }
+
+        @Override
+        public Collection<PropertyGroup> getAllPropertyGroups() {
+            return Collections.unmodifiableCollection(propertyGroups.values());
         }
     }
 }

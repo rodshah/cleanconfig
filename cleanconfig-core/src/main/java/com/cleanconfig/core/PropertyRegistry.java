@@ -1,20 +1,23 @@
 package com.cleanconfig.core;
 
+import com.cleanconfig.core.validation.PropertyGroup;
+
 import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Registry for managing property definitions.
+ * Registry for managing property definitions and property groups.
  *
- * <p>The property registry stores all property definitions and provides methods for
- * querying and retrieving them. It ensures that property names are unique and validates
- * dependencies between properties at registration time.
+ * <p>The property registry stores all property definitions and property groups,
+ * and provides methods for querying and retrieving them. It ensures that property
+ * names are unique and validates dependencies between properties at registration time.
  *
  * <p>Example usage:
  * <pre>
  * PropertyRegistry registry = PropertyRegistry.builder()
  *     .register(serverPortProperty)
  *     .register(serverHostProperty)
+ *     .registerGroup(databaseGroup)
  *     .build();
  *
  * Optional&lt;PropertyDefinition&lt;?&gt;&gt; property = registry.getProperty("server.port");
@@ -62,4 +65,21 @@ public interface PropertyRegistry {
      * @return all property names
      */
     Collection<String> getAllPropertyNames();
+
+    /**
+     * Gets a property group by name.
+     *
+     * @param groupName the group name
+     * @return the property group, or empty if not found
+     * @since 0.2.0
+     */
+    Optional<PropertyGroup> getPropertyGroup(String groupName);
+
+    /**
+     * Gets all property groups in this registry.
+     *
+     * @return all property groups
+     * @since 0.2.0
+     */
+    Collection<PropertyGroup> getAllPropertyGroups();
 }

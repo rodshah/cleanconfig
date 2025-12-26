@@ -1,5 +1,6 @@
 package com.cleanconfig.core;
 
+import com.cleanconfig.core.validation.PropertyGroup;
 import com.cleanconfig.core.validation.ValidationResult;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  *   <li>Applies type conversion before validation</li>
  *   <li>Respects validation order based on property dependencies</li>
  *   <li>Provides context for cross-property validation</li>
+ *   <li>Validates property groups and their multi-property rules</li>
  * </ul>
  *
  * <p>Example usage:
@@ -50,11 +52,12 @@ public interface PropertyValidator {
     ValidationResult validateProperty(String propertyName, String value, Map<String, String> properties);
 
     /**
-     * Validates properties in a specific context.
+     * Validates a property group.
      *
-     * @param properties the properties to validate
-     * @param contextType the validation context type
+     * @param group the property group to validate
+     * @param properties all properties (for multi-property validation)
      * @return the validation result
+     * @since 0.2.0
      */
-    ValidationResult validate(Map<String, String> properties, ValidationContextType contextType);
+    ValidationResult validatePropertyGroup(PropertyGroup group, Map<String, String> properties);
 }
