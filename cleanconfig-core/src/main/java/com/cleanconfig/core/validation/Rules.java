@@ -6,7 +6,9 @@ import com.cleanconfig.core.validation.rules.GeneralRules;
 import com.cleanconfig.core.validation.rules.NumericRules;
 import com.cleanconfig.core.validation.rules.StringRules;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -661,5 +663,84 @@ public final class Rules {
             BiPredicate<T, PropertyContext> contextPredicate,
             String errorMessage) {
         return GeneralRules.customWithContext(contextPredicate, errorMessage);
+    }
+
+    // ==================== Composite Rules ====================
+
+    /**
+     * Creates a composite rule that passes only if ALL provided rules pass (AND logic).
+     *
+     * <p>The composite rule short-circuits on the first failure and returns that error.
+     * All rules must pass for the composite rule to pass.
+     *
+     * <p>Example:
+     * <pre>
+     * ValidationRule&lt;String&gt; strictRule = Rules.allOf(
+     *     Rules.notBlank(),
+     *     Rules.minLength(3),
+     *     Rules.maxLength(50)
+     * );
+     * </pre>
+     *
+     * @param rules the rules to combine with AND logic
+     * @param <T> the value type
+     * @return composite validation rule
+     * @throws IllegalArgumentException if no rules are provided
+     */
+    @SafeVarargs
+    public static <T> ValidationRule<T> allOf(ValidationRule<T>... rules) {
+        if (rules == null || rules.length == 0) {
+            throw new IllegalArgumentException("At least one rule is required for allOf()");
+        }
+
+        return (propertyName, value, context) -> {
+            for (ValidationRule<T> rule : rules) {
+                ValidationResult result = rule.validate(propertyName, value, context);
+                if (!result.isValid()) {
+                    return result;
+                }
+            }
+            return ValidationResult.success();
+        };
+    }
+
+    /**
+     * Creates a composite rule that passes if ANY provided rule passes (OR logic).
+     *
+     * <p>The composite rule tries all rules and passes if at least one succeeds.
+     * If all rules fail, it returns a validation result containing all errors.
+     *
+     * <p>Example:
+     * <pre>
+     * ValidationRule&lt;String&gt; flexibleRule = Rules.anyOf(
+     *     Rules.allOf(Rules.notBlank(), Rules.maxLength(50)),
+     *     Rules.allOf(Rules.email(), Rules.endsWith("@company.com"))
+     * );
+     * </pre>
+     *
+     * @param rules the rules to combine with OR logic
+     * @param <T> the value type
+     * @return composite validation rule
+     * @throws IllegalArgumentException if no rules are provided
+     */
+    @SafeVarargs
+    public static <T> ValidationRule<T> anyOf(ValidationRule<T>... rules) {
+        if (rules == null || rules.length == 0) {
+            throw new IllegalArgumentException("At least one rule is required for anyOf()");
+        }
+
+        return (propertyName, value, context) -> {
+            List<ValidationError> allErrors = new ArrayList<>();
+
+            for (ValidationRule<T> rule : rules) {
+                ValidationResult result = rule.validate(propertyName, value, context);
+                if (result.isValid()) {
+                    return ValidationResult.success();
+                }
+                allErrors.addAll(result.getErrors());
+            }
+
+            return ValidationResult.failure(allErrors);
+        };
     }
 }
