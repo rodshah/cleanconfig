@@ -7,4 +7,26 @@
         <Class name="com.cleanconfig.core.logging.impl.Slf4jLoggerProvider$Slf4jLogger"/>
         <Bug pattern="REC_CATCH_EXCEPTION"/>
     </Match>
+
+    <!-- Suppress REC_CATCH_EXCEPTION in serialization classes
+         These classes use reflection to dynamically load Jackson/Gson libraries
+         and catching all exceptions is appropriate for optional dependencies -->
+    <Match>
+        <Class name="com.cleanconfig.serialization.JsonSerializer"/>
+        <Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+    <Match>
+        <Class name="com.cleanconfig.serialization.YamlSerializer"/>
+        <Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+    <Match>
+        <Class name="com.cleanconfig.serialization.PropertiesSerializer"/>
+        <Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+    <!-- Suppress SIC_INNER_SHOULD_BE_STATIC_ANON for TypeReference anonymous classes
+         These are used by Jackson and must be anonymous to capture type information -->
+    <Match>
+        <Class name="~com\.cleanconfig\.serialization\.(JsonSerializer|YamlSerializer)\$\d+"/>
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+    </Match>
 </FindBugsFilter>
