@@ -1,0 +1,17 @@
+description = 'CleanConfig Serialization - Optional JSON/YAML/Properties serialization'
+
+dependencies {
+    // Core module dependency
+    api project(':cleanconfig-core')
+
+    // Optional JSON serialization (Jackson)
+    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    compileOnly 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+
+    // Optional JSON serialization (Gson) - future implementation
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+
+    // Test dependencies (Jackson for testing)
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    testImplementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+}
