@@ -67,7 +67,7 @@ public class TypeConverterRegistryTest {
     // Double converter tests
     @Test
     public void convert_Double_ValidInput_ReturnsValue() {
-        assertThat(registry.convert("3.14159", Double.class)).hasValue(3.14159);
+        assertThat(registry.convert("7.89", Double.class)).hasValue(7.89);
         assertThat(registry.convert("-0.5", Double.class)).hasValue(-0.5);
         assertThat(registry.convert("1.23e10", Double.class)).hasValue(1.23e10);
     }
@@ -194,8 +194,8 @@ public class TypeConverterRegistryTest {
     // Path converter tests
     @Test
     public void convert_Path_ValidInput_ReturnsValue() {
-        Optional<Path> result = registry.convert("/usr/local/bin", Path.class);
-        assertThat(result).hasValue(Paths.get("/usr/local/bin"));
+        Optional<Path> result = registry.convert("src/test/resources", Path.class);
+        assertThat(result).hasValue(Paths.get("src/test/resources"));
     }
 
     // Duration converter tests
