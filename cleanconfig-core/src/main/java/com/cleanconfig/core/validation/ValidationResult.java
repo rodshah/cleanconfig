@@ -120,8 +120,12 @@ public final class ValidationResult {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ValidationResult that = (ValidationResult) o;
         return errors.equals(that.errors);
     }

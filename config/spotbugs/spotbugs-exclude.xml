@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Suppress REC_CATCH_EXCEPTION in Slf4jLoggerProvider
+         These catches are intentional - using reflection and catching all exceptions
+         is appropriate to avoid recursive logging errors -->
+    <Match>
+        <Class name="com.cleanconfig.core.logging.impl.Slf4jLoggerProvider$Slf4jLogger"/>
+        <Bug pattern="REC_CATCH_EXCEPTION"/>
+    </Match>
+</FindBugsFilter>

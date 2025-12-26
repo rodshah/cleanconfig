@@ -1,6 +1,5 @@
 package com.cleanconfig.core.logging;
 
-import com.cleanconfig.core.logging.impl.JulLoggerProvider;
 import com.cleanconfig.core.logging.impl.NoOpLoggerProvider;
 import org.junit.After;
 import org.junit.Before;

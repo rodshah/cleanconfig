@@ -72,6 +72,7 @@ subprojects {
     // SpotBugs configuration
     spotbugs {
         toolVersion = '4.7.3'
+        excludeFilter = rootProject.file('config/spotbugs/spotbugs-exclude.xml')
     }
 
     // Publishing configuration

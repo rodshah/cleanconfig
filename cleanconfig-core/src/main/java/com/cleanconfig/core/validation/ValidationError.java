@@ -99,14 +99,18 @@ public final class ValidationError {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ValidationError that = (ValidationError) o;
-        return propertyName.equals(that.propertyName) &&
-                errorMessage.equals(that.errorMessage) &&
-                Objects.equals(actualValue, that.actualValue) &&
-                Objects.equals(expectedValue, that.expectedValue) &&
-                Objects.equals(errorCode, that.errorCode);
+        return propertyName.equals(that.propertyName)
+                && errorMessage.equals(that.errorMessage)
+                && Objects.equals(actualValue, that.actualValue)
+                && Objects.equals(expectedValue, that.expectedValue)
+                && Objects.equals(errorCode, that.errorCode);
     }
 
     @Override
