@@ -34,36 +34,24 @@ PropKit provides a powerful, type-safe approach to property management with:
 
 ## Quick Start
 
-Coming soon... (after MVP release)
-
 ```java
-// Preview of what's coming:
-
-// Define a type-safe property
-PropertyDefinition<Integer> SERVER_PORT = PropertyDefinition.builder(Integer.class)
+// Define type-safe properties
+PropertyDefinition<Integer> serverPort = PropertyDefinition.builder(Integer.class)
     .name("server.port")
     .defaultValue(8080)
-    .validationRule(Rules.integerBetween(1024, 65535))
-    .description("HTTP server port")
+    .validationRule(Rules.port())
     .build();
 
-// Create a registry
-PropertyRegistry registry = PropertyRegistryBuilder.create()
-    .register(SERVER_PORT)
+// Create registry and validate
+PropertyRegistry registry = PropertyRegistry.builder()
+    .register(serverPort)
     .build();
 
-// Validate properties
 PropertyValidator validator = new DefaultPropertyValidator(registry);
-ValidationResult result = validator.validate(userProperties);
-
-if (result.isValid()) {
-    System.out.println("✓ All properties valid!");
-} else {
-    result.getErrors().forEach(error ->
-        System.err.println("✗ " + error.getPropertyName() + ": " + error.getErrorMessage())
-    );
-}
+ValidationResult result = validator.validate(properties);
 ```
+
+See [CleanConfig Core README](cleanconfig-core/README.md) for complete examples.
 
 ---
 
@@ -87,10 +75,11 @@ implementation 'com.propkit:propkit-core:0.1.0'
 
 ## Documentation
 
-- [Getting Started Guide](docs/getting-started.md) (Coming Soon)
-- [Validation Rules](docs/validation-rules.md) ✅
-- [Type Conversion](docs/type-conversion.md) ✅
-- [Logging](docs/logging.md) ✅
+- [Core Module README](cleanconfig-core/README.md) - Complete API documentation and examples
+- [Validation Rules](docs/validation-rules.md)
+- [Type Conversion](docs/type-conversion.md)
+- [Logging](docs/logging.md)
+- [Developer Guide](docs/developer-guide.md) (Coming Soon)
 - [API Reference](https://cleanconfig.dev/api) (Coming Soon)
 
 ---
