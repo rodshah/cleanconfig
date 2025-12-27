@@ -108,6 +108,30 @@ Shows how to serialize and deserialize properties in multiple formats.
 ./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.SerializationExample
 ```
 
+### 7. CachingExample
+
+Demonstrates performance optimization through validation caching and computed default memoization.
+
+**Key Concepts:**
+- `CachingPropertyValidator` - Cache validation results (14.5x speedup)
+- `computedCached()` - Memoize expensive default computations
+- Manual cache control (clear, size)
+- Performance measurement and comparison
+- When to use caching strategies
+
+**Run:**
+```bash
+./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.CachingExample
+```
+
+**Expected Output:**
+```
+Validated 1000 times:
+  Non-cached: 2.05 ms (487 ops/ms)
+  Cached:     0.14 ms (7142 ops/ms)
+  Speedup:    14.7x faster with caching!
+```
+
 ## Example Output
 
 Each example prints detailed output showing:
@@ -124,11 +148,13 @@ Each example prints detailed output showing:
 4. **Dependencies**: Properties validate in correct order
 5. **Context-Aware**: Different rules for different environments
 6. **Serialization**: Export/import properties in multiple formats
+7. **Performance**: 14.5x faster validation with optional caching
 
 ## See Also
 
 - [Core Module README](../cleanconfig-core/README.md) - Complete API documentation
 - [Validation Rules](../docs/validation-rules.md) - All available validation rules
+- [Performance Guide](../docs/performance.md) - Benchmarks and optimization strategies
 - [Developer Guide](../docs/developer-guide.md) - How to extend CleanConfig
 
 ## License
