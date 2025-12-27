@@ -82,7 +82,8 @@ cd propkit
 - **Prefer immutability** - final fields, no setters
 - **Functional interfaces** where appropriate
 - **Comprehensive Javadoc** for all public APIs
-- **No external dependencies** in propkit-core (except SLF4J API compile-only)
+- **No external dependencies** in cleanconfig-core (except SLF4J API compile-only)
+- **Optional dependencies** in cleanconfig-serialization (Jackson loaded via reflection)
 
 ### Example Code Style
 
@@ -231,9 +232,10 @@ Fixes #38
 ### Documentation Files
 
 When adding features, also update:
-- Module README (e.g., `propkit-core/README.md`)
+- Module README (e.g., `cleanconfig-core/README.md`, `cleanconfig-serialization/README.md`)
 - User guide (`docs/user-guide.md`)
-- Code examples (`propkit-examples/`)
+- Feature guides (`docs/validation-rules.md`, `docs/serialization.md`, etc.)
+- Code examples (`cleanconfig-examples/`)
 
 ## Pull Request Checklist
 

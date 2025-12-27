@@ -13,7 +13,8 @@
 
 This library is currently in early development. APIs may change. Star this repo to follow progress!
 
-**Current Phase:** P0 - Core Library Foundation (Week 1/16)
+**Current Phase:** P1 - Production-Ready Features (Week 5/16)
+**Progress:** 11/21 milestones complete (52%)
 
 ---
 
@@ -25,7 +26,8 @@ PropKit provides a powerful, type-safe approach to property management with:
 - ✅ **Composable Validation Rules** - Build complex validation from simple, reusable rules
 - ✅ **Conditional Default Values** - Defaults that depend on other property values
 - ✅ **Dependency-Aware Validation** - Validates properties in the correct order
-- ✅ **Context-Based Configuration** - Different validation rules for different contexts
+- ✅ **Multi-Property Validation** - Cross-property validation and property groups
+- ✅ **Serialization Support** - Export/import properties in JSON, YAML, and Properties formats
 - ✅ **Zero Dependencies** - Core module has no external dependencies
 - ✅ **Java 11+ Compatible** - Works with Java 11 and all newer versions
 - ✅ **Pluggable Logging** - Works with SLF4J, JUL, or custom loggers
@@ -33,6 +35,8 @@ PropKit provides a powerful, type-safe approach to property management with:
 ---
 
 ## Quick Start
+
+### Basic Usage
 
 ```java
 // Define type-safe properties
@@ -51,36 +55,96 @@ PropertyValidator validator = new DefaultPropertyValidator(registry);
 ValidationResult result = validator.validate(properties);
 ```
 
-See [CleanConfig Core README](cleanconfig-core/README.md) for complete examples.
+### With Serialization
+
+```java
+// Serialize properties to YAML
+YamlSerializer serializer = new YamlSerializer();
+String yaml = serializer.serialize(
+    properties,
+    registry,
+    SerializationOptions.verbose()
+);
+
+// Deserialize back
+Map<String, String> loaded = serializer.deserialize(yaml);
+```
+
+See [Core Module README](cleanconfig-core/README.md) and [Serialization Module README](cleanconfig-serialization/README.md) for complete examples.
 
 ---
 
 ## Installation
 
-**Maven** (coming soon):
+### Core Module
+
+**Maven**:
 ```xml
 <dependency>
     <groupId>com.propkit</groupId>
     <artifactId>propkit-core</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
-**Gradle** (coming soon):
+**Gradle**:
 ```groovy
-implementation 'com.propkit:propkit-core:0.1.0'
+implementation 'com.propkit:propkit-core:0.1.0-SNAPSHOT'
+```
+
+### Serialization Module (Optional)
+
+**Maven**:
+```xml
+<dependency>
+    <groupId>com.propkit</groupId>
+    <artifactId>cleanconfig-serialization</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+
+<!-- For JSON support -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.2</version>
+</dependency>
+
+<!-- For YAML support -->
+<dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-yaml</artifactId>
+    <version>2.15.2</version>
+</dependency>
+```
+
+**Gradle**:
+```groovy
+implementation 'com.propkit:cleanconfig-serialization:0.1.0-SNAPSHOT'
+
+// Optional: For JSON support
+implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
+// Optional: For YAML support
+implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 ```
 
 ---
 
 ## Documentation
 
-- [Core Module README](cleanconfig-core/README.md) - Complete API documentation and examples
-- [Validation Rules](docs/validation-rules.md)
-- [Type Conversion](docs/type-conversion.md)
-- [Logging](docs/logging.md)
-- [Developer Guide](docs/developer-guide.md) (Coming Soon)
-- [API Reference](https://cleanconfig.dev/api) (Coming Soon)
+### Module Documentation
+- [Core Module](cleanconfig-core/README.md) - Type-safe properties, validation, and defaults
+- [Serialization Module](cleanconfig-serialization/README.md) - JSON/YAML/Properties serialization
+
+### Feature Guides
+- [Validation Rules](docs/validation-rules.md) - 40+ built-in validation rules
+- [Advanced Validation](docs/advanced-validation.md) - Multi-property validation and groups
+- [Type Conversion](docs/type-conversion.md) - Built-in converters and custom types
+- [Logging](docs/logging.md) - Zero-dependency logging abstraction
+- [Developer Guide](docs/developer-guide.md) - Build, test, and contribute
+
+### API Reference
+- [Javadoc](https://cleanconfig.dev/api) (Coming Soon)
 
 ---
 
