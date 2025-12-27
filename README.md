@@ -13,8 +13,8 @@
 
 This library is currently in early development. APIs may change. Star this repo to follow progress!
 
-**Current Phase:** P1 - Production-Ready Features (Week 5/16)
-**Progress:** 11/21 milestones complete (52%)
+**Current Phase:** P1 - Production-Ready Features (Week 7/16)
+**Progress:** 13/21 milestones complete (62%)
 
 ---
 
@@ -31,6 +31,31 @@ PropKit provides a powerful, type-safe approach to property management with:
 - ✅ **Zero Dependencies** - Core module has no external dependencies
 - ✅ **Java 11+ Compatible** - Works with Java 11 and all newer versions
 - ✅ **Pluggable Logging** - Works with SLF4J, JUL, or custom loggers
+
+---
+
+## Performance
+
+PropKit is designed for high-performance property validation with minimal overhead:
+
+| Operation | Throughput | Notes |
+|-----------|------------|-------|
+| Validation (small config) | **1,767 ops/ms** | 10 properties with validation rules |
+| Validation (medium config) | **498 ops/ms** | 50 properties with validation rules |
+| Validation (large config) | **133 ops/ms** | 200 properties with validation rules |
+| **Cached validation** | **7,118 ops/ms** | **14.5x faster** with cache enabled |
+| Properties serialization | **565 ops/ms** | Fastest format, zero dependencies |
+| JSON serialization | **397 ops/ms** | With metadata support |
+| YAML serialization | **74 ops/ms** | Human-readable format |
+
+**Optional Performance Features:**
+- **Validation Caching**: 14.5x speedup for repeated validations
+- **Computed Default Memoization**: Cache expensive calculations (system calls, I/O)
+- **Thread-Safe**: All caching features use concurrent data structures
+
+See [Performance Guide](docs/performance.md) for benchmarking details, optimization strategies, and usage examples.
+
+*Benchmarks: JMH 1.37, 3 warmup iterations, 5 measurement iterations, 2 forks on MacBook Pro M4 Max (16 cores, 64GB RAM, OpenJDK 11).*
 
 ---
 
@@ -163,7 +188,13 @@ cd propkit
 
 # Generate coverage report
 ./gradlew jacocoTestReport
+
+# Run performance benchmarks (optional, ~10 minutes)
+./gradlew :cleanconfig-benchmarks:jmh
+# Results saved to: cleanconfig-benchmarks/build/results/jmh/results.txt
 ```
+
+See [cleanconfig-benchmarks/README.md](cleanconfig-benchmarks/README.md) for benchmark details.
 
 ---
 
