@@ -1,0 +1,102 @@
+package com.cleanconfig.benchmarks;
+
+import com.cleanconfig.core.PropertyCategory;
+import com.cleanconfig.core.PropertyDefinition;
+import com.cleanconfig.core.PropertyRegistry;
+import com.cleanconfig.core.PropertyRegistryBuilder;
+import com.cleanconfig.serialization.*;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Benchmark for serialization performance.
+ */
+@BenchmarkMode({Mode.Throughput, Mode.AverageTime})
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+@Warmup(iterations = 3, time = 1)
+@Measurement(iterations = 5, time = 1)
+@Fork(2)
+public class SerializationBenchmark {
+
+    private PropertyRegistry registry;
+    private Map<String, String> properties;
+
+    private PropertiesSerializer propertiesSerializer;
+    private JsonSerializer jsonSerializer;
+    private YamlSerializer yamlSerializer;
+
+    private SerializationOptions defaultOptions;
+    private SerializationOptions verboseOptions;
+
+    @Setup
+    public void setup() throws Exception {
+        // Create registry with 50 properties
+        PropertyRegistryBuilder builder = PropertyRegistry.builder();
+        for (int i = 0; i < 50; i++) {
+            PropertyDefinition<String> def = PropertyDefinition.builder(String.class)
+                    .name("property." + i)
+                    .description("Test property " + i)
+                    .defaultValue("default" + i)
+                    .category(PropertyCategory.GENERAL)
+                    .build();
+            builder.register(def);
+        }
+        registry = builder.build();
+
+        // Create properties
+        properties = new HashMap<>();
+        for (int i = 0; i < 50; i++) {
+            properties.put("property." + i, "value" + i);
+        }
+
+        // Create serializers
+        propertiesSerializer = new PropertiesSerializer();
+        jsonSerializer = new JsonSerializer();
+        yamlSerializer = new YamlSerializer();
+
+        // Create options
+        defaultOptions = SerializationOptions.defaults();
+        verboseOptions = SerializationOptions.verbose();
+    }
+
+    @Benchmark
+    public String propertiesFormat() throws Exception {
+        return propertiesSerializer.serialize(properties, registry, defaultOptions);
+    }
+
+    @Benchmark
+    public String jsonFormat() throws Exception {
+        return jsonSerializer.serialize(properties, registry, defaultOptions);
+    }
+
+    @Benchmark
+    public String yamlFormat() throws Exception {
+        return yamlSerializer.serialize(properties, registry, defaultOptions);
+    }
+
+    @Benchmark
+    public String jsonVerbose() throws Exception {
+        return jsonSerializer.serialize(properties, registry, verboseOptions);
+    }
+
+    @Benchmark
+    public String yamlVerbose() throws Exception {
+        return yamlSerializer.serialize(properties, registry, verboseOptions);
+    }
+
+    @Benchmark
+    public Map<String, String> jsonRoundTrip() throws Exception {
+        String serialized = jsonSerializer.serialize(properties, registry, defaultOptions);
+        return jsonSerializer.deserialize(serialized);
+    }
+
+    @Benchmark
+    public Map<String, String> yamlRoundTrip() throws Exception {
+        String serialized = yamlSerializer.serialize(properties, registry, defaultOptions);
+        return yamlSerializer.deserialize(serialized);
+    }
+}

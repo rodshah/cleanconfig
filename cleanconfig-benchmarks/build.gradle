@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.1'
+}
+
+description = 'CleanConfig Benchmarks - JMH Performance Benchmarks'
+
+dependencies {
+    implementation project(':cleanconfig-core')
+    implementation project(':cleanconfig-serialization')
+
+    // JMH annotations
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+
+    // For serialization benchmarks
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+jmh {
+    jmhVersion = '1.37'
+    warmupIterations = 3
+    iterations = 5
+    fork = 2
+    threads = 1
+    benchmarkMode = ['thrpt', 'avgt']
+    timeUnit = 'ms'
+}
+
+// Exclude JMH-generated code from SpotBugs
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+    // Exclude JMH-generated code
+    classes = classes.filter {
+        !it.path.contains('jmh_generated')
+    }
+}

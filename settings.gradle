@@ -2,6 +2,7 @@ rootProject.name = 'cleanconfig'
 
 include 'cleanconfig-core'
 include 'cleanconfig-serialization'
+include 'cleanconfig-benchmarks'
 include 'cleanconfig-spring-boot-starter'
 include 'cleanconfig-scala'
 include 'cleanconfig-store-api'
