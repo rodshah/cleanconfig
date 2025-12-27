@@ -1,6 +1,9 @@
 package com.cleanconfig.serialization;
 
+import com.cleanconfig.core.PropertyContext;
 import com.cleanconfig.core.PropertyRegistry;
+import com.cleanconfig.core.converter.TypeConverterRegistry;
+import com.cleanconfig.core.impl.DefaultPropertyContext;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -188,12 +191,20 @@ public class JsonSerializer implements PropertySerializer {
 
         // Include default values if requested
         if (options.isIncludeDefaults()) {
+            // Create context for computing defaults
+            PropertyContext context = new DefaultPropertyContext(
+                    properties,
+                    TypeConverterRegistry.getInstance()
+            );
+
             registry.getAllProperties().stream()
                     .filter(def -> !toSerialize.containsKey(def.getName()))
                     .forEach(def -> {
-                        if (def.getDefaultValue() != null) {
-                            toSerialize.put(def.getName(), def.getDefaultValue().toString());
-                        }
+                        def.getDefaultValue().ifPresent(conditionalDefault -> {
+                            conditionalDefault.computeDefault(context).ifPresent(value -> {
+                                toSerialize.put(def.getName(), value.toString());
+                            });
+                        });
                     });
         }
 
@@ -218,9 +229,9 @@ public class JsonSerializer implements PropertySerializer {
                         }
 
                         if (options.isIncludeDescriptions()) {
-                            if (def.getDescription() != null) {
-                                propMetadata.put("description", def.getDescription());
-                            }
+                            def.getDescription().ifPresent(desc ->
+                                    propMetadata.put("description", desc)
+                            );
                         }
 
                         if (!propMetadata.isEmpty()) {

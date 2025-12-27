@@ -1,6 +1,9 @@
 package com.cleanconfig.serialization;
 
+import com.cleanconfig.core.PropertyContext;
 import com.cleanconfig.core.PropertyRegistry;
+import com.cleanconfig.core.converter.TypeConverterRegistry;
+import com.cleanconfig.core.impl.DefaultPropertyContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -78,12 +81,20 @@ public class PropertiesSerializer implements PropertySerializer {
 
             // Include default values if requested
             if (options.isIncludeDefaults()) {
+                // Create context for computing defaults
+                PropertyContext context = new DefaultPropertyContext(
+                        properties,
+                        TypeConverterRegistry.getInstance()
+                );
+
                 registry.getAllProperties().stream()
                         .filter(def -> !toSerialize.containsKey(def.getName()))
                         .forEach(def -> {
-                            if (def.getDefaultValue() != null) {
-                                toSerialize.put(def.getName(), def.getDefaultValue().toString());
-                            }
+                            def.getDefaultValue().ifPresent(conditionalDefault -> {
+                                conditionalDefault.computeDefault(context).ifPresent(value -> {
+                                    toSerialize.put(def.getName(), value.toString());
+                                });
+                            });
                         });
             }
 
@@ -99,9 +110,9 @@ public class PropertiesSerializer implements PropertySerializer {
                 if (options.isIncludeMetadata() || options.isIncludeDescriptions()) {
                     registry.getProperty(key).ifPresent(def -> {
                         if (options.isIncludeDescriptions()) {
-                            if (def.getDescription() != null) {
-                                output.append("# ").append(def.getDescription()).append("\n");
-                            }
+                            def.getDescription().ifPresent(desc ->
+                                    output.append("# ").append(desc).append("\n")
+                            );
                         }
                         if (options.isIncludeMetadata()) {
                             output.append("# Type: ")
