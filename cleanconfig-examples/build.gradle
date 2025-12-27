@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+description = 'CleanConfig - Code Examples'
+
+dependencies {
+    implementation project(':cleanconfig-core')
+    implementation project(':cleanconfig-serialization')
+
+    // For serialization examples
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+// Allow running examples via: ./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.BasicTypeSafetyExample
+if (project.hasProperty('mainClass')) {
+    application {
+        mainClass = project.property('mainClass')
+    }
+}
