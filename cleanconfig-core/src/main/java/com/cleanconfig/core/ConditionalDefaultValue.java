@@ -72,6 +72,68 @@ public interface ConditionalDefaultValue<T> {
     }
 
     /**
+     * Creates a cached computed default value.
+     *
+     * <p>The computation result is memoized based on the property context fingerprint.
+     * Use this for expensive computations (I/O, system calls, calculations) that
+     * produce the same result for the same context.
+     *
+     * <p>Example usage:
+     * <pre>
+     * // Expensive: system call every time
+     * .defaultValue(ConditionalDefaultValue.computed(ctx -&gt;
+     *     Optional.of(Runtime.getRuntime().availableProcessors() * 2)
+     * ))
+     *
+     * // Optimized: cached result
+     * .defaultValue(ConditionalDefaultValue.computedCached(ctx -&gt;
+     *     Optional.of(Runtime.getRuntime().availableProcessors() * 2),
+     *     1  // cache size = 1 (result never changes)
+     * ))
+     * </pre>
+     *
+     * @param computer function to compute the default from context
+     * @param cacheSize maximum number of cached results
+     * @param <T> the value type
+     * @return a memoized conditional default
+     * @since 0.1.0
+     */
+    static <T> ConditionalDefaultValue<T> computedCached(
+            Function<PropertyContext, Optional<T>> computer,
+            int cacheSize) {
+        Objects.requireNonNull(computer, "computer function cannot be null");
+        if (cacheSize <= 0) {
+            throw new IllegalArgumentException("Cache size must be positive");
+        }
+
+        java.util.concurrent.ConcurrentHashMap<Integer, T> cache =
+                new java.util.concurrent.ConcurrentHashMap<>(cacheSize);
+
+        return context -> {
+            // Create cache key from context properties hash
+            int cacheKey = context.getAllProperties().hashCode();
+
+            // Try to get from cache
+            T cachedValue = cache.get(cacheKey);
+            if (cachedValue != null) {
+                return Optional.of(cachedValue);
+            }
+
+            // Cache miss - compute the value
+            Optional<T> computed = computer.apply(context);
+
+            // Store in cache if present and space available
+            computed.ifPresent(value -> {
+                if (cache.size() < cacheSize) {
+                    cache.put(cacheKey, value);
+                }
+            });
+
+            return computed;
+        };
+    }
+
+    /**
      * Adds a conditional override to this default value.
      *
      * <p>If the condition is true, the override value is used instead of this default.
