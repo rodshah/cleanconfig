@@ -1,11 +1,11 @@
 plugins {
-    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    id 'io.github.sgtsilvio.gradle.maven-central-publishing' version '0.4.1' apply false
+    id 'io.github.sgtsilvio.gradle.metadata' version '0.6.0' apply false
     id 'com.github.spotbugs' version '5.0.14' apply false
 }
 
 allprojects {
-    group = 'com.cleanconfig'
-    version = '0.1.0-SNAPSHOT'
+    group = 'io.github.rodshah'
 
     repositories {
         mavenCentral()
@@ -14,18 +14,35 @@ allprojects {
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
     apply plugin: 'checkstyle'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
+
+    // Only apply publishing plugins to modules with actual code
+    def publishableModules = ['cleanconfig-core', 'cleanconfig-serialization',
+                               'cleanconfig-spring-boot-starter', 'cleanconfig-scala',
+                               'cleanconfig-examples']
+    def shouldPublish = publishableModules.contains(project.name)
+
+    if (shouldPublish) {
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
+        apply plugin: 'io.github.sgtsilvio.gradle.maven-central-publishing'
+        apply plugin: 'io.github.sgtsilvio.gradle.metadata'
+
+        println "[${project.name}] Publishing enabled"
+    } else {
+        println "[${project.name}] Skipping publishing (empty module)"
+    }
 
     java {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
 
-        withJavadocJar()
-        withSourcesJar()
+        if (shouldPublish) {
+            withJavadocJar()
+            withSourcesJar()
+        }
     }
 
     dependencies {
@@ -75,46 +92,63 @@ subprojects {
         excludeFilter = rootProject.file('config/spotbugs/spotbugs-exclude.xml')
     }
 
-    // Publishing configuration
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
+    // Publishing configuration - only for publishable modules
+    if (shouldPublish) {
+        // Set project description (used by metadata plugin)
+        description = 'Type-safe declarative library to manage configurations for with support for complex relationships and default values'
 
-                pom {
-                    name = project.name
-                    description = 'Type-safe property management library for Java 11+'
-                    url = 'https://github.com/rodshah/cleanconfig'
+        // Debug logging for credentials
+        gradle.taskGraph.whenReady {
+            println "[${project.name}] Checking credentials..."
+            println "[${project.name}] signingKey present: ${project.hasProperty('signingKey')}"
+            println "[${project.name}] signingPassword present: ${project.hasProperty('signingPassword')}"
+            println "[${project.name}] mavenCentralUsername present: ${project.hasProperty('mavenCentralUsername')}"
+            println "[${project.name}] mavenCentralPassword present: ${project.hasProperty('mavenCentralPassword')}"
+        }
 
-                    licenses {
-                        license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        }
-                    }
+        // Metadata configuration (replaces manual POM configuration)
+        metadata {
+            readableName = project.name
 
-                    developers {
-                        developer {
-                            id = 'rodshah'
-                            name = 'Rohan Shah'
-                            email = 'rohan.51.shah@gmail.com'
-                        }
-                    }
+            license {
+                apache2()
+            }
 
-                    scm {
-                        connection = 'scm:git:git://github.com/rodshah/cleanconfig.git'
-                        developerConnection = 'scm:git:ssh://github.com/rodshah/cleanconfig.git'
-                        url = 'https://github.com/rodshah/cleanconfig'
-                    }
+            developers {
+                register('rodshah') {
+                    fullName = 'Rohan Shah'
+                    email = 'rohan.51.shah@gmail.com'
+                }
+            }
+
+            github {
+                org = 'rodshah'
+                repo = 'cleanconfig'
+            }
+        }
+
+        // Publishing configuration
+        publishing {
+            publications {
+                register('mavenJava', MavenPublication) {
+                    from components.java
                 }
             }
         }
-    }
 
-    // Signing configuration
-    signing {
-        required = { gradle.taskGraph.hasTask("publish") }
-        sign publishing.publications.mavenJava
+        // Signing configuration - uses in-memory PGP keys
+        signing {
+            if (project.hasProperty('signingKey') && project.hasProperty('signingPassword')) {
+                useInMemoryPgpKeys(
+                    project.property('signingKey') as String,
+                    project.property('signingPassword') as String
+                )
+                println "[${project.name}] Signing configured with in-memory keys"
+            }
+
+            sign publishing.publications.mavenJava
+            required = project.hasProperty('signingKey') && project.hasProperty('signingPassword')
+        }
     }
 
     // Java compilation options

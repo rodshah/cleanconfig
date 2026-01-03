@@ -1,7 +1,5 @@
 plugins {
     id 'scala'
-    id 'maven-publish'
-    id 'signing'
 }
 
 description = 'Scala wrapper for CleanConfig with idiomatic DSL'
@@ -67,43 +65,27 @@ tasks.withType(Checkstyle) {
     enabled = false
 }
 
+// Generate scaladoc jar (required by Maven Central)
+task scaladocJar(type: Jar) {
+    archiveClassifier = 'javadoc'
+    from scaladoc
+}
+
 java {
     withSourcesJar()
 }
 
+// Ensure scaladoc is generated before publishing tasks
+tasks.withType(GenerateModuleMetadata) {
+    dependsOn scaladocJar
+}
+
+// Customize artifact ID for Scala version
 publishing {
     publications {
-        mavenScala(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId = 'cleanconfig-scala_2.13'
-
-            artifact tasks.jar
-            artifact tasks.sourcesJar
-
-            pom {
-                name = 'CleanConfig Scala'
-                description = 'Scala wrapper for CleanConfig with idiomatic DSL'
-                url = 'https://github.com/rodshah/cleanconfig'
-
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'rodshah'
-                        name = 'CleanConfig Team'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:git://github.com/rodshah/cleanconfig.git'
-                    developerConnection = 'scm:git:ssh://github.com:rodshah/cleanconfig.git'
-                    url = 'https://github.com/rodshah/cleanconfig'
-                }
-            }
+            artifact scaladocJar
         }
     }
 }

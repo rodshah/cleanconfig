@@ -98,12 +98,6 @@ jobs:
           echo "Updated gradle.properties:"
           grep "version=" gradle.properties
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
       - name: Build artifacts
         run: ./gradlew clean build -x test --no-daemon
 
@@ -112,11 +106,11 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
         run: |
           echo "🚀 Publishing to Maven Central..."
-          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon
+          ./gradlew publishToMavenCentral --no-daemon --continue
           echo "✅ Published successfully!"
 
       - name: Dry run - Show what would be published
