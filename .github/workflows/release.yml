@@ -1,0 +1,204 @@
+name: Release to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v0.1.0, v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0)'
+        required: true
+      dry-run:
+        description: 'Dry run (skip actual publish)'
+        required: false
+        default: 'false'
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z (e.g., 0.1.0)"
+            exit 1
+          fi
+
+          echo "✅ Valid version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check if tag exists
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+            echo "❌ Tag v${{ env.VERSION }} already exists"
+            exit 1
+          fi
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Verify all tests pass
+        run: ./gradlew clean test --no-daemon
+
+      - name: Verify coverage threshold
+        run: ./gradlew jacocoTestReport jacocoTestCoverageVerification --no-daemon
+
+  release:
+    name: Build and Publish to Maven Central
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production  # Requires approval in GitHub settings
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Releasing version: $VERSION"
+
+      - name: Update version in gradle.properties
+        run: |
+          sed -i 's/version=.*/version=${{ steps.version.outputs.version }}/' gradle.properties
+          echo "Updated gradle.properties:"
+          grep "version=" gradle.properties
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Build artifacts
+        run: ./gradlew clean build -x test --no-daemon
+
+      - name: Sign and publish to Maven Central
+        if: github.event.inputs.dry-run != 'true'
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          echo "🚀 Publishing to Maven Central..."
+          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon
+          echo "✅ Published successfully!"
+
+      - name: Dry run - Show what would be published
+        if: github.event.inputs.dry-run == 'true'
+        run: |
+          echo "🔍 DRY RUN - Would publish the following artifacts:"
+          ./gradlew tasks --all | grep publish
+          echo "✅ Dry run completed. No artifacts were published."
+
+      - name: Create GitHub Release
+        if: github.event.inputs.dry-run != 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## CleanConfig v${{ steps.version.outputs.version }}
+
+            Released on: ${{ github.event.head_commit.timestamp }}
+
+            ### 📦 Artifacts
+            Published to Maven Central:
+            - `com.propkit:cleanconfig-core:${{ steps.version.outputs.version }}`
+            - `com.propkit:cleanconfig-serialization:${{ steps.version.outputs.version }}`
+            - `com.propkit:cleanconfig-spring-boot-starter:${{ steps.version.outputs.version }}`
+            - `com.propkit:cleanconfig-scala_2.13:${{ steps.version.outputs.version }}`
+
+            ### 📝 Changes
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+            ### 📚 Documentation
+            - [Getting Started](https://github.com/${{ github.repository }}/blob/main/README.md)
+            - [API Documentation](https://javadoc.io/doc/com.propkit/cleanconfig-core)
+          draft: false
+          prerelease: false
+          files: |
+            **/build/libs/*.jar
+            **/build/libs/*.pom
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit version bump
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add gradle.properties
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release version ${{ steps.version.outputs.version }}"
+          git push origin main --tags
+
+  post-release:
+    name: Post-Release Tasks
+    needs: release
+    runs-on: ubuntu-latest
+    if: github.event.inputs.dry-run != 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update version to next SNAPSHOT
+        run: |
+          CURRENT_VERSION="${{ needs.release.outputs.version }}"
+          # Increment patch version
+          IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-SNAPSHOT"
+
+          sed -i "s/version=.*/version=$NEXT_VERSION/" gradle.properties
+          echo "📝 Updated version to $NEXT_VERSION"
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add gradle.properties
+          git commit -m "chore: prepare for next development iteration ($NEXT_VERSION)"
+          git push origin main
+
+      - name: Notify on Slack/Discord (optional)
+        if: false  # Enable if you have webhook configured
+        run: |
+          echo "🎉 Release completed! Notification sent."
