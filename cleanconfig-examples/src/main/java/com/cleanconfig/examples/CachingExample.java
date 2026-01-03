@@ -1,10 +1,14 @@
 package com.cleanconfig.examples;
 
-import com.cleanconfig.core.*;
+import com.cleanconfig.core.ConditionalDefaultValue;
+import com.cleanconfig.core.PropertyCategory;
+import com.cleanconfig.core.PropertyContext;
+import com.cleanconfig.core.PropertyDefinition;
+import com.cleanconfig.core.PropertyRegistry;
+import com.cleanconfig.core.PropertyValidator;
 import com.cleanconfig.core.cache.CachingPropertyValidator;
 import com.cleanconfig.core.impl.DefaultPropertyValidator;
 import com.cleanconfig.core.validation.Rules;
-import com.cleanconfig.core.validation.ValidationResult;
 
 import java.time.Duration;
 import java.util.HashMap;

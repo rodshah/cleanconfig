@@ -32,6 +32,7 @@ public class ValidationErrorTest {
                 .actualValue("80")
                 .expectedValue("1024-65535")
                 .errorCode("PORT_OUT_OF_RANGE")
+                .suggestion("Use a port >= 1024 to avoid requiring root privileges")
                 .build();
 
         assertThat(error.getPropertyName()).isEqualTo("server.port");
@@ -39,6 +40,28 @@ public class ValidationErrorTest {
         assertThat(error.getActualValue()).isEqualTo("80");
         assertThat(error.getExpectedValue()).isEqualTo("1024-65535");
         assertThat(error.getErrorCode()).isEqualTo("PORT_OUT_OF_RANGE");
+        assertThat(error.getSuggestion()).isEqualTo("Use a port >= 1024 to avoid requiring root privileges");
+    }
+
+    @Test
+    public void builder_WithSuggestion_SetsSuggestion() {
+        ValidationError error = ValidationError.builder()
+                .propertyName("email")
+                .errorMessage("Invalid email format")
+                .suggestion("Try using format: user@example.com")
+                .build();
+
+        assertThat(error.getSuggestion()).isEqualTo("Try using format: user@example.com");
+    }
+
+    @Test
+    public void builder_WithoutSuggestion_SuggestionIsNull() {
+        ValidationError error = ValidationError.builder()
+                .propertyName("test.property")
+                .errorMessage("Invalid value")
+                .build();
+
+        assertThat(error.getSuggestion()).isNull();
     }
 
     @Test
@@ -67,16 +90,35 @@ public class ValidationErrorTest {
                 .propertyName("test")
                 .errorMessage("Error")
                 .actualValue("value")
+                .suggestion("Fix this")
                 .build();
 
         ValidationError error2 = ValidationError.builder()
                 .propertyName("test")
                 .errorMessage("Error")
                 .actualValue("value")
+                .suggestion("Fix this")
                 .build();
 
         assertThat(error1).isEqualTo(error2);
         assertThat(error1.hashCode()).isEqualTo(error2.hashCode());
+    }
+
+    @Test
+    public void equals_DifferentSuggestions_ReturnsFalse() {
+        ValidationError error1 = ValidationError.builder()
+                .propertyName("test")
+                .errorMessage("Error")
+                .suggestion("Suggestion 1")
+                .build();
+
+        ValidationError error2 = ValidationError.builder()
+                .propertyName("test")
+                .errorMessage("Error")
+                .suggestion("Suggestion 2")
+                .build();
+
+        assertThat(error1).isNotEqualTo(error2);
     }
 
     @Test
@@ -114,6 +156,7 @@ public class ValidationErrorTest {
                 .actualValue("80")
                 .expectedValue("1024-65535")
                 .errorCode("PORT_OUT_OF_RANGE")
+                .suggestion("Use port >= 1024")
                 .build();
 
         String str = error.toString();
@@ -122,5 +165,18 @@ public class ValidationErrorTest {
         assertThat(str).contains("80");
         assertThat(str).contains("1024-65535");
         assertThat(str).contains("PORT_OUT_OF_RANGE");
+        assertThat(str).contains("Use port >= 1024");
+    }
+
+    @Test
+    public void toString_WithSuggestion_ContainsSuggestion() {
+        ValidationError error = ValidationError.builder()
+                .propertyName("email")
+                .errorMessage("Invalid email")
+                .suggestion("Try format: user@example.com")
+                .build();
+
+        String str = error.toString();
+        assertThat(str).contains("suggestion='Try format: user@example.com'");
     }
 }

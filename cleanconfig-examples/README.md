@@ -132,6 +132,35 @@ Validated 1000 times:
   Speedup:    14.7x faster with caching!
 ```
 
+### 8. ErrorFormattingExample
+
+Demonstrates enhanced error messages and multiple output formatters.
+
+**Key Concepts:**
+- `TextValidationFormatter` - Human-readable console output
+- `JsonValidationFormatter` - Machine-readable JSON output
+- Error messages with actual/expected values
+- Multiple validation errors with clear formatting
+- Different formatters for different use cases
+
+**Run:**
+```bash
+./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.ErrorFormattingExample
+```
+
+**Expected Output:**
+```
+Example 1: Text Formatter (Human-Readable)
+------------------------------------------
+Validation failed with 3 errors:
+
+Error 1: server.port
+  Message: Value must be between 1024 and 65535
+  Actual: 80
+  Expected: [1024, 65535]
+...
+```
+
 ## Example Output
 
 Each example prints detailed output showing:
@@ -149,6 +178,7 @@ Each example prints detailed output showing:
 5. **Context-Aware**: Different rules for different environments
 6. **Serialization**: Export/import properties in multiple formats
 7. **Performance**: 14.5x faster validation with optional caching
+8. **Error Formatting**: Multiple formatters for human/machine-readable output
 
 ## See Also
 

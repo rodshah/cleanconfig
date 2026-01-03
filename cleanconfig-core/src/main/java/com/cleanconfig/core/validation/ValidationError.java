@@ -12,6 +12,7 @@ import java.util.Objects;
  *   <li>Optional actual value that was validated</li>
  *   <li>Optional expected value or constraint</li>
  *   <li>Optional error code for programmatic handling</li>
+ *   <li>Optional suggestion for how to fix the error</li>
  * </ul>
  *
  * <p>Example usage:
@@ -22,6 +23,7 @@ import java.util.Objects;
  *     .actualValue("80")
  *     .expectedValue("1024-65535")
  *     .errorCode("PORT_OUT_OF_RANGE")
+ *     .suggestion("Use a port >= 1024 to avoid requiring root privileges")
  *     .build();
  * </pre>
  *
@@ -34,6 +36,7 @@ public final class ValidationError {
     private final String actualValue;
     private final String expectedValue;
     private final String errorCode;
+    private final String suggestion;
 
     private ValidationError(Builder builder) {
         this.propertyName = Objects.requireNonNull(builder.propertyName, "propertyName cannot be null");
@@ -41,6 +44,7 @@ public final class ValidationError {
         this.actualValue = builder.actualValue;
         this.expectedValue = builder.expectedValue;
         this.errorCode = builder.errorCode;
+        this.suggestion = builder.suggestion;
     }
 
     /**
@@ -97,6 +101,15 @@ public final class ValidationError {
         return errorCode;
     }
 
+    /**
+     * Gets the suggestion for how to fix the error.
+     *
+     * @return suggestion, or null if not set
+     */
+    public String getSuggestion() {
+        return suggestion;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -110,12 +123,13 @@ public final class ValidationError {
                 && errorMessage.equals(that.errorMessage)
                 && Objects.equals(actualValue, that.actualValue)
                 && Objects.equals(expectedValue, that.expectedValue)
-                && Objects.equals(errorCode, that.errorCode);
+                && Objects.equals(errorCode, that.errorCode)
+                && Objects.equals(suggestion, that.suggestion);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(propertyName, errorMessage, actualValue, expectedValue, errorCode);
+        return Objects.hash(propertyName, errorMessage, actualValue, expectedValue, errorCode, suggestion);
     }
 
     @Override
@@ -132,6 +146,9 @@ public final class ValidationError {
         if (errorCode != null) {
             sb.append(", code='").append(errorCode).append("'");
         }
+        if (suggestion != null) {
+            sb.append(", suggestion='").append(suggestion).append("'");
+        }
         sb.append("}");
         return sb.toString();
     }
@@ -145,6 +162,7 @@ public final class ValidationError {
         private String actualValue;
         private String expectedValue;
         private String errorCode;
+        private String suggestion;
 
         private Builder() {
         }
@@ -201,6 +219,17 @@ public final class ValidationError {
          */
         public Builder errorCode(String errorCode) {
             this.errorCode = errorCode;
+            return this;
+        }
+
+        /**
+         * Sets the suggestion for how to fix the error.
+         *
+         * @param suggestion the suggestion (optional)
+         * @return this builder
+         */
+        public Builder suggestion(String suggestion) {
+            this.suggestion = suggestion;
             return this;
         }
 

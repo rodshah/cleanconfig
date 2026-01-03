@@ -27,6 +27,8 @@ PropKit provides a powerful, type-safe approach to property management with:
 - ✅ **Conditional Default Values** - Defaults that depend on other property values
 - ✅ **Dependency-Aware Validation** - Validates properties in the correct order
 - ✅ **Multi-Property Validation** - Cross-property validation and property groups
+- ✅ **Enhanced Error Messages** - Clear errors with actual/expected values and suggestions
+- ✅ **Multiple Output Formatters** - Text and JSON formatters for different use cases
 - ✅ **Serialization Support** - Export/import properties in JSON, YAML, and Properties formats
 - ✅ **Zero Dependencies** - Core module has no external dependencies
 - ✅ **Java 11+ Compatible** - Works with Java 11 and all newer versions
