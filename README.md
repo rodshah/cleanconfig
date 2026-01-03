@@ -21,6 +21,7 @@ PropKit provides a powerful, type-safe approach to property management with:
 - ✅ **Enhanced Error Messages** - Clear errors with actual/expected values and suggestions
 - ✅ **Multiple Output Formatters** - Text and JSON formatters for different use cases
 - ✅ **Serialization Support** - Export/import properties in JSON, YAML, and Properties formats
+- ✅ **Spring Boot Integration** - Auto-configuration starter for seamless Spring Boot integration
 - ✅ **Zero Dependencies** - Core module has no external dependencies
 - ✅ **Java 11+ Compatible** - Works with Java 11 and all newer versions
 - ✅ **Pluggable Logging** - Works with SLF4J, JUL, or custom loggers
@@ -88,7 +89,36 @@ String yaml = serializer.serialize(
 Map<String, String> loaded = serializer.deserialize(yaml);
 ```
 
-See [Core Module README](cleanconfig-core/README.md) and [Serialization Module README](cleanconfig-serialization/README.md) for complete examples.
+### With Spring Boot
+
+```java
+// 1. Add dependency
+implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
+
+// 2. Define property schemas as beans
+@Configuration
+public class AppConfig {
+    @Bean
+    public PropertyDefinition<String> appName() {
+        return PropertyDefinition.builder(String.class)
+                .name("app.name")
+                .validationRule(Rules.notBlank().and(Rules.minLength(3)))
+                .build();
+    }
+}
+
+// 3. Provide values in application.properties
+app.name=My Application
+
+// 4. Use validated properties
+@RestController
+public class MyController {
+    @Value("${app.name}")
+    private String appName;
+}
+```
+
+See [Core Module README](cleanconfig-core/README.md), [Serialization Module README](cleanconfig-serialization/README.md), and [Spring Boot Integration](docs/spring-boot-integration.md) for complete examples.
 
 ---
 
@@ -146,6 +176,22 @@ implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 ```
 
+### Spring Boot Starter (Optional)
+
+**Maven**:
+```xml
+<dependency>
+    <groupId>com.propkit</groupId>
+    <artifactId>cleanconfig-spring-boot-starter</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+**Gradle**:
+```groovy
+implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
+```
+
 ---
 
 ## Documentation
@@ -153,8 +199,10 @@ implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 ### Module Documentation
 - [Core Module](cleanconfig-core/README.md) - Type-safe properties, validation, and defaults
 - [Serialization Module](cleanconfig-serialization/README.md) - JSON/YAML/Properties serialization
+- [Spring Boot Starter](cleanconfig-spring-boot-example/README.md) - Auto-configuration and examples
 
 ### Feature Guides
+- [Spring Boot Integration](docs/spring-boot-integration.md) - Architecture and usage guide
 - [Validation Rules](docs/validation-rules.md) - 40+ built-in validation rules
 - [Advanced Validation](docs/advanced-validation.md) - Multi-property validation and groups
 - [Type Conversion](docs/type-conversion.md) - Built-in converters and custom types
