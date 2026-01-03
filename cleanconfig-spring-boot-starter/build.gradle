@@ -1,0 +1,40 @@
+plugins {
+    id 'java-library'
+}
+
+description = 'Spring Boot Starter for CleanConfig'
+
+// Spring Boot version for compileOnly dependencies
+// Clients can use any Spring Boot 2.x or 3.x version
+def springBootVersion = '2.7.18'
+
+dependencies {
+    // CleanConfig Core
+    api project(':cleanconfig-core')
+
+    // Spring Boot Dependencies - compileOnly so clients can choose their version
+    compileOnly "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+    annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor:${springBootVersion}"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
+
+    // SLF4J for logging
+    compileOnly 'org.slf4j:slf4j-api:1.7.36'
+
+    // SpotBugs annotations for suppressing false positives
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.3'
+
+    // Testing - use specific version only for our tests
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Generate spring-configuration-metadata.json
+compileJava {
+    options.compilerArgs << '-parameters'
+}

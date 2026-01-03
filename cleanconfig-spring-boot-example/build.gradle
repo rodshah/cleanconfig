@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+description = 'Spring Boot Example Application for CleanConfig'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    // CleanConfig Spring Boot Starter
+    implementation project(':cleanconfig-spring-boot-starter')
+
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // SLF4J
+    implementation 'org.slf4j:slf4j-api'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// Exclude from main build checks since it's an example
+tasks.withType(Checkstyle) {
+    enabled = false
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    enabled = false
+}
+
+test {
+    useJUnitPlatform()
+}
