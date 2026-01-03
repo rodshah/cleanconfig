@@ -43,7 +43,7 @@ subprojects {
 
     // JaCoCo configuration
     jacoco {
-        toolVersion = "0.8.9"
+        toolVersion = "0.8.11"  // Supports Java 21
     }
 
     jacocoTestReport {
@@ -71,7 +71,7 @@ subprojects {
 
     // SpotBugs configuration
     spotbugs {
-        toolVersion = '4.7.3'
+        toolVersion = '4.8.3'  // Supports Java 21
         excludeFilter = rootProject.file('config/spotbugs/spotbugs-exclude.xml')
     }
 
@@ -120,6 +120,7 @@ subprojects {
     // Java compilation options
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
+        options.release = 11  // Ensures true Java 11 compatibility
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
     }
 
