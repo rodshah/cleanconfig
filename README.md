@@ -9,15 +9,6 @@
 
 ---
 
-## 🚧 Status: Under Active Development
-
-This library is currently in early development. APIs may change. Star this repo to follow progress!
-
-**Current Phase:** P1 - Production-Ready Features (Week 7/16)
-**Progress:** 13/21 milestones complete (62%)
-
----
-
 ## Features
 
 PropKit provides a powerful, type-safe approach to property management with:
