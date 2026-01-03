@@ -1,4 +1,4 @@
-package com.cleanconfig.example;
+package com.cleanconfig.examples.springboot;
 
 import com.cleanconfig.core.PropertyCategory;
 import com.cleanconfig.core.PropertyDefinition;
@@ -52,7 +52,7 @@ public class ApplicationPropertiesConfig {
                         Rules.notBlank()
                                 .and(Rules.minLength(3))
                                 .and(Rules.maxLength(50))
-                                .and(Rules.pattern("^[a-zA-Z0-9 ]+$"))
+                                .and(Rules.matchesRegex("^[a-zA-Z0-9 ]+$"))
                 )
                 .category(PropertyCategory.GENERAL)
                 .build();
@@ -69,7 +69,7 @@ public class ApplicationPropertiesConfig {
                 .defaultValue("jdbc:h2:mem:testdb")
                 .validationRule(
                         Rules.notBlank()
-                                .and(Rules.pattern("^jdbc:[a-z0-9]+:.*"))
+                                .and(Rules.matchesRegex("^jdbc:[a-z0-9]+:.*"))
                 )
                 .category(PropertyCategory.GENERAL)
                 .build();
@@ -85,7 +85,7 @@ public class ApplicationPropertiesConfig {
                 .description("Maximum database connections (1-100)")
                 .defaultValue(10)
                 .validationRule(
-                        Rules.range(1, 100)
+                        Rules.integerBetween(1, 100)
                                 .and(Rules.positive())
                 )
                 .category(PropertyCategory.GENERAL)
@@ -122,7 +122,7 @@ public class ApplicationPropertiesConfig {
                         Rules.notBlank()
                                 .and(Rules.minLength(32))
                                 .and(Rules.maxLength(64))
-                                .and(Rules.pattern("^[a-zA-Z0-9-]+$"))
+                                .and(Rules.matchesRegex("^[a-zA-Z0-9-]+$"))
                 )
                 .category(PropertyCategory.GENERAL)
                 .build();

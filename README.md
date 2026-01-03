@@ -22,6 +22,7 @@ PropKit provides a powerful, type-safe approach to property management with:
 - ✅ **Multiple Output Formatters** - Text and JSON formatters for different use cases
 - ✅ **Serialization Support** - Export/import properties in JSON, YAML, and Properties formats
 - ✅ **Spring Boot Integration** - Auto-configuration starter for seamless Spring Boot integration
+- ✅ **Scala Wrapper** - Idiomatic Scala DSL with operator overloading and functional programming support
 - ✅ **Zero Dependencies** - Core module has no external dependencies
 - ✅ **Java 11+ Compatible** - Works with Java 11 and all newer versions
 - ✅ **Pluggable Logging** - Works with SLF4J, JUL, or custom loggers
@@ -118,7 +119,37 @@ public class MyController {
 }
 ```
 
-See [Core Module README](cleanconfig-core/README.md), [Serialization Module README](cleanconfig-serialization/README.md), and [Spring Boot Integration](docs/spring-boot-integration.md) for complete examples.
+### With Scala
+
+```scala
+import com.cleanconfig.scala._
+import com.cleanconfig.scala.RuleOps._
+
+implicit val intClass: Class[Int] = classOf[Int]
+implicit val stringClass: Class[String] = classOf[String]
+
+// Define properties with Scala DSL
+val serverPort = Property[Int](
+  name = "server.port",
+  defaultValue = Some(8080),
+  validationRule = Some(Rules.port)
+)
+
+val appName = Property[String](
+  name = "app.name",
+  validationRule = Some(Rules.notBlank && Rules.minLength(3))
+)
+
+// Build registry and validate
+val registry = PropertyRegistry()
+  .registerAll(serverPort, appName)
+  .build()
+
+val validator = PropertyValidator(registry)
+val result = validator.validate(Map("server.port" -> "8080", "app.name" -> "My App"))
+```
+
+See [Core Module README](cleanconfig-core/README.md), [Scala Module README](cleanconfig-scala/README.md), [Serialization Module README](cleanconfig-serialization/README.md), and [Spring Boot Integration](docs/spring-boot-integration.md) for complete examples.
 
 ---
 
@@ -192,6 +223,27 @@ implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
 ```
 
+### Scala Module (Optional)
+
+**Gradle**:
+```groovy
+implementation 'com.propkit:cleanconfig-scala:0.1.0-SNAPSHOT'
+```
+
+**SBT**:
+```scala
+libraryDependencies += "com.propkit" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
+```
+
+**Maven**:
+```xml
+<dependency>
+    <groupId>com.propkit</groupId>
+    <artifactId>cleanconfig-scala_2.13</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
 ---
 
 ## Documentation
@@ -200,9 +252,11 @@ implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
 - [Core Module](cleanconfig-core/README.md) - Type-safe properties, validation, and defaults
 - [Serialization Module](cleanconfig-serialization/README.md) - JSON/YAML/Properties serialization
 - [Spring Boot Starter](cleanconfig-spring-boot-example/README.md) - Auto-configuration and examples
+- [Scala Module](cleanconfig-scala/README.md) - Idiomatic Scala DSL and functional programming
 
 ### Feature Guides
 - [Spring Boot Integration](docs/spring-boot-integration.md) - Architecture and usage guide
+- [Scala Integration](docs/scala-integration.md) - Scala DSL and framework integration
 - [Validation Rules](docs/validation-rules.md) - 40+ built-in validation rules
 - [Advanced Validation](docs/advanced-validation.md) - Multi-property validation and groups
 - [Type Conversion](docs/type-conversion.md) - Built-in converters and custom types

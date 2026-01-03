@@ -1,17 +1,49 @@
 plugins {
     id 'java'
+    id 'scala'
     id 'application'
+    id 'org.springframework.boot' version '2.7.18' apply false
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
 description = 'CleanConfig - Code Examples'
 
+def scalaVersion = '2.13.12'
+def scalaLibraryVersion = '2.13'
+
 dependencies {
     implementation project(':cleanconfig-core')
     implementation project(':cleanconfig-serialization')
+    implementation project(':cleanconfig-scala')
+    implementation project(':cleanconfig-spring-boot-starter')
+
+    // Scala support
+    implementation "org.scala-lang:scala-library:${scalaVersion}"
+
+    // Spring Boot support
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // For serialization examples
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        scala {
+            srcDirs = ['src/main/scala']
+        }
+    }
 }
 
 java {
@@ -19,7 +51,17 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+// Disable SpotBugs and Checkstyle for examples module
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    enabled = false
+}
+
+tasks.withType(Checkstyle) {
+    enabled = false
+}
+
 // Allow running examples via: ./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.BasicTypeSafetyExample
+// For Spring Boot example: ./gradlew :cleanconfig-examples:bootRun -PmainClass=com.cleanconfig.examples.springboot.CleanConfigExampleApplication
 if (project.hasProperty('mainClass')) {
     application {
         mainClass = project.property('mainClass')

@@ -1,0 +1,109 @@
+plugins {
+    id 'scala'
+    id 'maven-publish'
+    id 'signing'
+}
+
+description = 'Scala wrapper for CleanConfig with idiomatic DSL'
+
+def scalaVersion = '2.13.12'
+def scalaLibraryVersion = '2.13'
+
+dependencies {
+    // Core CleanConfig dependency
+    api project(':cleanconfig-core')
+
+    // Scala standard library
+    implementation "org.scala-lang:scala-library:${scalaVersion}"
+
+    // ScalaTest for testing
+    testImplementation "org.scalatest:scalatest_${scalaLibraryVersion}:3.2.17"
+    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:2.1.0'
+
+    // JUnit for ScalaTest integration
+    testImplementation 'org.junit.platform:junit-platform-engine:1.10.0'
+    testRuntimeOnly 'co.helmethair:scalatest-junit-runner:0.2.0'
+}
+
+sourceSets {
+    main {
+        scala {
+            srcDirs = ['src/main/scala']
+        }
+    }
+    test {
+        scala {
+            srcDirs = ['src/test/scala']
+        }
+    }
+}
+
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.additionalParameters = [
+        '-deprecation',
+        '-feature',
+        '-unchecked',
+        '-Xlint'
+    ]
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'scalatest'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Disable SpotBugs for Scala code (designed for Java, produces false positives)
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    enabled = false
+}
+
+// Disable Checkstyle for Scala code
+tasks.withType(Checkstyle) {
+    enabled = false
+}
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenScala(MavenPublication) {
+            artifactId = 'cleanconfig-scala_2.13'
+
+            artifact tasks.jar
+            artifact tasks.sourcesJar
+
+            pom {
+                name = 'CleanConfig Scala'
+                description = 'Scala wrapper for CleanConfig with idiomatic DSL'
+                url = 'https://github.com/rodshah/cleanconfig'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'rodshah'
+                        name = 'CleanConfig Team'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git://github.com/rodshah/cleanconfig.git'
+                    developerConnection = 'scm:git:ssh://github.com:rodshah/cleanconfig.git'
+                    url = 'https://github.com/rodshah/cleanconfig'
+                }
+            }
+        }
+    }
+}
