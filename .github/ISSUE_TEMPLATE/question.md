@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask a question about PropKit
+about: Ask a question about CleanConfig
 title: '[QUESTION] '
 labels: question
 assignees: ''
@@ -28,6 +28,6 @@ Provide context about what you're trying to achieve.
 
 ## Environment (if relevant)
 
-- **PropKit Version:**
+- **CleanConfig Version:**
 - **Java Version:**
 - **Build Tool:**

@@ -1,12 +1,12 @@
-# Logging in PropKit
+# Logging in CleanConfig
 
-PropKit provides a flexible, zero-dependency logging abstraction.
+CleanConfig provides a flexible, zero-dependency logging abstraction.
 
 ## Quick Start
 
 ```java
-import com.propkit.core.logging.Logger;
-import com.propkit.core.logging.LoggerFactory;
+import com.cleanconfig.core.logging.Logger;
+import com.cleanconfig.core.logging.LoggerFactory;
 
 public class MyClass {
     private static final Logger log = LoggerFactory.getLogger(MyClass.class);
@@ -21,7 +21,7 @@ public class MyClass {
 
 ## Auto-Detection
 
-PropKit automatically detects and uses logging frameworks in this order:
+CleanConfig automatically detects and uses logging frameworks in this order:
 
 1. **SLF4J** (if on classpath)
 2. **JUL** (java.util.logging, always available)
@@ -38,7 +38,7 @@ dependencies {
 }
 ```
 
-PropKit will automatically use SLF4J.
+CleanConfig will automatically use SLF4J.
 
 ## Using with JUL
 
@@ -46,7 +46,7 @@ No additional dependencies needed. Configure via `logging.properties`:
 
 ```properties
 .level=INFO
-com.propkit.level=DEBUG
+com.cleanconfig.level=DEBUG
 handlers=java.util.logging.ConsoleHandler
 ```
 
@@ -59,7 +59,7 @@ LoggerFactory.setLoggerProvider(new CustomLoggerProvider());
 ## Silent Logging
 
 ```java
-import com.propkit.core.logging.impl.NoOpLoggerProvider;
+import com.cleanconfig.core.logging.impl.NoOpLoggerProvider;
 
 LoggerFactory.setLoggerProvider(new NoOpLoggerProvider());
 ```

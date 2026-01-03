@@ -1,10 +1,10 @@
-# Contributing to PropKit
+# Contributing to CleanConfig
 
-Thank you for your interest in contributing to PropKit! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to CleanConfig! This document provides guidelines for contributing to the project.
 
 ## Code of Conduct
 
-Be respectful and professional. We want PropKit to be a welcoming project for all contributors.
+Be respectful and professional. We want CleanConfig to be a welcoming project for all contributors.
 
 ## How to Contribute
 
@@ -57,8 +57,8 @@ Be respectful and professional. We want PropKit to be a welcoming project for al
 
 ```bash
 # Clone your fork
-git clone https://github.com/your-username/propkit.git
-cd propkit
+git clone https://github.com/your-username/cleanconfig.git
+cd cleanconfig
 
 # Build
 ./gradlew build
@@ -132,7 +132,7 @@ public interface ValidationRule<T> {
 - Methods: `camelCase` (e.g., `validate()`, `applyDefaults()`)
 - Constants: `UPPER_SNAKE_CASE` (e.g., `SERVER_PORT`)
 - Variables: `camelCase` (e.g., `propertyName`)
-- Packages: lowercase (e.g., `com.propkit.core.validator`)
+- Packages: lowercase (e.g., `com.cleanconfig.core.validation`)
 
 ## Testing Guidelines
 
@@ -208,7 +208,7 @@ Fixes #38
 
 ## Logging Guidelines
 
-- Use the PropKit logging abstraction (`LoggerFactory.getLogger()`)
+- Use the CleanConfig logging abstraction (`LoggerFactory.getLogger()`)
 - **NEVER log sensitive data** (passwords, tokens, API keys)
 - Use appropriate log levels:
   - **ERROR**: System errors, exceptions
@@ -260,4 +260,4 @@ Before submitting your PR, ensure:
 
 ## License
 
-By contributing to PropKit, you agree that your contributions will be licensed under the Apache License 2.0.
+By contributing to CleanConfig, you agree that your contributions will be licensed under the Apache License 2.0.

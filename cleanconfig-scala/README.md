@@ -16,18 +16,18 @@ Idiomatic Scala wrapper for CleanConfig with type-safe DSL and functional progra
 
 **Gradle**:
 ```groovy
-implementation 'com.propkit:cleanconfig-scala:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-scala:0.1.0-SNAPSHOT'
 ```
 
 **SBT**:
 ```scala
-libraryDependencies += "com.propkit" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
+libraryDependencies += "com.cleanconfig" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
 ```
 
 **Maven**:
 ```xml
 <dependency>
-    <groupId>com.propkit</groupId>
+    <groupId>com.cleanconfig</groupId>
     <artifactId>cleanconfig-scala_2.13</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>

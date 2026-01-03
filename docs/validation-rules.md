@@ -1,6 +1,6 @@
-# Validation Rules in PropKit
+# Validation Rules in CleanConfig
 
-PropKit provides 40+ pre-built validation rules organized into four categories.
+CleanConfig provides 40+ pre-built validation rules organized into four categories.
 
 ## Quick Start
 
@@ -109,7 +109,7 @@ Conditions are predicates used with `.onlyIf()` for conditional validation.
 | `or(conditions...)` | Any condition true | `Conditions.or(c1, c2, c3)` |
 | `not(condition)` | Negate condition | `Conditions.not(c)` |
 
-See [Conditions.java](../propkit-core/src/main/java/com/propkit/core/validation/Conditions.java) for complete list.
+See [Conditions.java](../cleanconfig-core/src/main/java/com/cleanconfig/core/validation/Conditions.java) for complete list.
 
 ## Rule Composition
 

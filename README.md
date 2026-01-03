@@ -1,9 +1,9 @@
-# PropKit
+# CleanConfig
 
 **Type-safe property management library for Java 11+**
 
-[![Build Status](https://img.shields.io/badge/build-pending-yellow)](https://github.com/rodshah/propkit)
-[![Maven Central](https://img.shields.io/badge/maven--central-0.1.0--SNAPSHOT-blue)](https://central.sonatype.com/artifact/com.propkit/propkit-core)
+[![Build Status](https://img.shields.io/badge/build-pending-yellow)](https://github.com/rodshah/cleanconfig)
+[![Maven Central](https://img.shields.io/badge/maven--central-0.1.0--SNAPSHOT-blue)](https://central.sonatype.com/artifact/com.cleanconfig/cleanconfig-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/java-11%2B-blue)](https://openjdk.org/)
 
@@ -11,7 +11,7 @@
 
 ## Features
 
-PropKit provides a powerful, type-safe approach to property management with:
+CleanConfig provides a powerful, type-safe approach to property management with:
 
 - ✅ **Type-Safe Property Definitions** - No more `Map<String, String>`, use strongly-typed properties
 - ✅ **Composable Validation Rules** - Build complex validation from simple, reusable rules
@@ -31,7 +31,7 @@ PropKit provides a powerful, type-safe approach to property management with:
 
 ## Performance
 
-PropKit is designed for high-performance property validation with minimal overhead:
+CleanConfig is designed for high-performance property validation with minimal overhead:
 
 | Operation | Throughput | Notes |
 |-----------|------------|-------|
@@ -94,7 +94,7 @@ Map<String, String> loaded = serializer.deserialize(yaml);
 
 ```java
 // 1. Add dependency
-implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
 
 // 2. Define property schemas as beans
 @Configuration
@@ -160,15 +160,15 @@ See [Core Module README](cleanconfig-core/README.md), [Scala Module README](clea
 **Maven**:
 ```xml
 <dependency>
-    <groupId>com.propkit</groupId>
-    <artifactId>propkit-core</artifactId>
+    <groupId>com.cleanconfig</groupId>
+    <artifactId>cleanconfig-core</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
 **Gradle**:
 ```groovy
-implementation 'com.propkit:propkit-core:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-core:0.1.0-SNAPSHOT'
 ```
 
 ### Serialization Module (Optional)
@@ -176,7 +176,7 @@ implementation 'com.propkit:propkit-core:0.1.0-SNAPSHOT'
 **Maven**:
 ```xml
 <dependency>
-    <groupId>com.propkit</groupId>
+    <groupId>com.cleanconfig</groupId>
     <artifactId>cleanconfig-serialization</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
@@ -198,7 +198,7 @@ implementation 'com.propkit:propkit-core:0.1.0-SNAPSHOT'
 
 **Gradle**:
 ```groovy
-implementation 'com.propkit:cleanconfig-serialization:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-serialization:0.1.0-SNAPSHOT'
 
 // Optional: For JSON support
 implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
@@ -212,7 +212,7 @@ implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 **Maven**:
 ```xml
 <dependency>
-    <groupId>com.propkit</groupId>
+    <groupId>com.cleanconfig</groupId>
     <artifactId>cleanconfig-spring-boot-starter</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
@@ -220,25 +220,25 @@ implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
 
 **Gradle**:
 ```groovy
-implementation 'com.propkit:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-spring-boot-starter:0.1.0-SNAPSHOT'
 ```
 
 ### Scala Module (Optional)
 
 **Gradle**:
 ```groovy
-implementation 'com.propkit:cleanconfig-scala:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-scala:0.1.0-SNAPSHOT'
 ```
 
 **SBT**:
 ```scala
-libraryDependencies += "com.propkit" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
+libraryDependencies += "com.cleanconfig" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
 ```
 
 **Maven**:
 ```xml
 <dependency>
-    <groupId>com.propkit</groupId>
+    <groupId>com.cleanconfig</groupId>
     <artifactId>cleanconfig-scala_2.13</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
@@ -272,8 +272,8 @@ libraryDependencies += "com.propkit" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
 
 ```bash
 # Clone the repository
-git clone https://github.com/rodshah/propkit.git
-cd propkit
+git clone https://github.com/rodshah/cleanconfig.git
+cd cleanconfig
 
 # Build (requires JDK 11+)
 ./gradlew build

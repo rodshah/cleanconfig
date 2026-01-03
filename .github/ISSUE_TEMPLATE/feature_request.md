@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a new feature for PropKit
+about: Suggest a new feature for CleanConfig
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''

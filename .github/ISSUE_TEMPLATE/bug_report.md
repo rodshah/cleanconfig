@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in PropKit
+about: Report a bug in CleanConfig
 title: '[BUG] '
 labels: bug
 assignees: ''
@@ -32,7 +32,7 @@ What actually happened.
 
 ## Environment
 
-- **PropKit Version:** (e.g., 0.1.0)
+- **CleanConfig Version:** (e.g., 0.1.0)
 - **Java Version:** (e.g., OpenJDK 11.0.12)
 - **OS:** (e.g., macOS 12.5, Ubuntu 22.04, Windows 11)
 - **Build Tool:** (e.g., Gradle 7.6, Maven 3.8.6)

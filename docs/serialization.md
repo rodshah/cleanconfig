@@ -5,7 +5,7 @@ Serialize and deserialize CleanConfig properties in Properties, JSON, or YAML fo
 ## Installation
 
 ```groovy
-implementation 'com.propkit:cleanconfig-serialization:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-serialization:0.1.0-SNAPSHOT'
 
 // Optional: For JSON/YAML support
 implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'

@@ -1,6 +1,6 @@
-# Type Conversion in PropKit
+# Type Conversion in CleanConfig
 
-PropKit provides automatic type conversion from string property values to typed values.
+CleanConfig provides automatic type conversion from string property values to typed values.
 
 ## Built-in Converters
 

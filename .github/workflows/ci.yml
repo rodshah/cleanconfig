@@ -44,9 +44,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.java == '11'
         uses: codecov/codecov-action@v3
         with:
-          files: ./propkit-core/build/reports/jacoco/test/jacocoTestReport.xml
+          files: ./cleanconfig-core/build/reports/jacoco/test/jacocoTestReport.xml
           flags: unittests
-          name: codecov-propkit
+          name: codecov-cleanconfig
 
       - name: Run Checkstyle
         run: ./gradlew checkstyleMain checkstyleTest --no-daemon
@@ -68,4 +68,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: propkit-core/build/reports/jacoco/test/html/
+          path: cleanconfig-core/build/reports/jacoco/test/html/

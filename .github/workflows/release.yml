@@ -139,17 +139,17 @@ jobs:
 
             ### 📦 Artifacts
             Published to Maven Central:
-            - `com.propkit:cleanconfig-core:${{ steps.version.outputs.version }}`
-            - `com.propkit:cleanconfig-serialization:${{ steps.version.outputs.version }}`
-            - `com.propkit:cleanconfig-spring-boot-starter:${{ steps.version.outputs.version }}`
-            - `com.propkit:cleanconfig-scala_2.13:${{ steps.version.outputs.version }}`
+            - `com.cleanconfig:cleanconfig-core:${{ steps.version.outputs.version }}`
+            - `com.cleanconfig:cleanconfig-serialization:${{ steps.version.outputs.version }}`
+            - `com.cleanconfig:cleanconfig-spring-boot-starter:${{ steps.version.outputs.version }}`
+            - `com.cleanconfig:cleanconfig-scala_2.13:${{ steps.version.outputs.version }}`
 
             ### 📝 Changes
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
 
             ### 📚 Documentation
             - [Getting Started](https://github.com/${{ github.repository }}/blob/main/README.md)
-            - [API Documentation](https://javadoc.io/doc/com.propkit/cleanconfig-core)
+            - [API Documentation](https://javadoc.io/doc/com.cleanconfig/cleanconfig-core)
           draft: false
           prerelease: false
           files: |
