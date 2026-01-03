@@ -34,9 +34,11 @@ import java.util.Objects;
  *     category: DATABASE
  * </pre>
  *
+ * <p>This class is final to prevent finalizer attacks when constructor throws exceptions.</p>
+ *
  * @since 0.1.0
  */
-public class YamlSerializer implements PropertySerializer {
+public final class YamlSerializer implements PropertySerializer {
 
     private final Object yamlMapper;
 

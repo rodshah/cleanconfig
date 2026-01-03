@@ -24,9 +24,11 @@ import java.util.Set;
  * <p>This implementation validates properties in dependency order using topological sort
  * to ensure that properties are validated after their dependencies.
  *
+ * <p>This class is final to prevent finalizer attacks when constructor throws exceptions.
+ *
  * @since 0.1.0
  */
-public class DefaultPropertyValidator implements PropertyValidator {
+public final class DefaultPropertyValidator implements PropertyValidator {
 
     private final PropertyRegistry registry;
     private final TypeConverterRegistry converterRegistry;

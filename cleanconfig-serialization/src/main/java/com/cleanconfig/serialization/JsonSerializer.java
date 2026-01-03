@@ -40,9 +40,11 @@ import java.util.Objects;
  * }
  * }</pre>
  *
+ * <p>This class is final to prevent finalizer attacks when constructor throws exceptions.</p>
+ *
  * @since 0.1.0
  */
-public class JsonSerializer implements PropertySerializer {
+public final class JsonSerializer implements PropertySerializer {
 
     private final Object objectMapper;
 
