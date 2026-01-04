@@ -27,6 +27,9 @@ dependencies {
     // For serialization examples
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+
+    // Explicitly use SnakeYAML 2.0+ (Spring Boot BOM uses 1.x which is incompatible)
+    implementation 'org.yaml:snakeyaml:2.0'
 }
 
 dependencyManagement {

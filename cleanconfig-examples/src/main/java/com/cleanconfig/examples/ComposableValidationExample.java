@@ -128,6 +128,53 @@ public class ComposableValidationExample {
         ValidationResult result8 = validator3.validate(negativePort);
         System.out.println("Port -1: " + result8.isValid());
 
+        System.out.println();
+
+        // Example 4: Multiple properties validated together - ALL errors collected
+        System.out.println("Example 4: Collecting all validation errors");
+
+        PropertyDefinition<String> companyEmail = PropertyDefinition.builder(String.class)
+                .name("company.email")
+                .validationRule(Rules.notBlank().and(Rules.email()).and(Rules.endsWith("@company.com")))
+                .required(true)
+                .build();
+
+        PropertyDefinition<String> companyUsername = PropertyDefinition.builder(String.class)
+                .name("company.username")
+                .validationRule(Rules.notBlank().and(Rules.minLength(3)).and(Rules.alphanumeric()))
+                .required(true)
+                .build();
+
+        PropertyDefinition<Integer> companyPort = PropertyDefinition.builder(Integer.class)
+                .name("company.port")
+                .validationRule(Rules.port())
+                .required(true)
+                .build();
+
+        PropertyRegistry registryAll = PropertyRegistry.builder()
+                .register(companyEmail)
+                .register(companyUsername)
+                .register(companyPort)
+                .build();
+
+        PropertyValidator validatorAll = new DefaultPropertyValidator(registryAll);
+
+        // Invalid data for ALL properties - library collects ALL errors
+        Map<String, String> allInvalid = new HashMap<>();
+        allInvalid.put("company.email", "invalid-email");  // Not a valid email
+        allInvalid.put("company.username", "ab");          // Too short
+        allInvalid.put("company.port", "99999");           // Invalid port
+
+        ValidationResult resultAll = validatorAll.validate(allInvalid);
+        System.out.println("All properties invalid: " + resultAll.isValid());
+        System.out.println("Number of errors collected: " + resultAll.getErrors().size());
+        System.out.println("\nAll validation errors:");
+        resultAll.getErrors().forEach(error ->
+            System.out.println("  - [" + error.getPropertyName() + "] " + error.getErrorMessage()
+                + " (got: '" + error.getActualValue() + "')")
+        );
+
         System.out.println("\n=== Composable rules provide flexible validation! ===");
+        System.out.println("=== Library collects ALL errors before failing! ===");
     }
 }
