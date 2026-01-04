@@ -2,8 +2,8 @@
 
 **Type-safe property management library for Java 11+**
 
-[![Build Status](https://img.shields.io/badge/build-pending-yellow)](https://github.com/rodshah/cleanconfig)
-[![Maven Central](https://img.shields.io/badge/maven--central-0.1.0--SNAPSHOT-blue)](https://central.sonatype.com/artifact/com.cleanconfig/cleanconfig-core)
+[![Build Status](https://github.com/rodshah/cleanconfig/actions/workflows/ci.yml/badge.svg)](https://github.com/rodshah/cleanconfig/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.rodshah/cleanconfig-core)](https://central.sonatype.com/artifact/io.github.rodshah/cleanconfig-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/java-11%2B-blue)](https://openjdk.org/)
 
