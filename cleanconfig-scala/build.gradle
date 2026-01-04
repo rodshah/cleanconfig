@@ -75,17 +75,13 @@ java {
     withSourcesJar()
 }
 
-// Ensure scaladoc is generated before publishing tasks
-tasks.withType(GenerateModuleMetadata) {
-    dependsOn scaladocJar
-}
-
-// Customize artifact ID for Scala version
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = 'cleanconfig-scala_2.13'
-            artifact scaladocJar
+// Override artifact ID to include Scala version
+afterEvaluate {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = 'cleanconfig-scala_2.13'
+            }
         }
     }
 }
