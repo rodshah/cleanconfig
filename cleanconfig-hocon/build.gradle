@@ -1,0 +1,13 @@
+description = 'CleanConfig HOCON - Typesafe Config integration for CleanConfig'
+
+dependencies {
+    api project(':cleanconfig-core')
+    implementation 'com.typesafe:config:1.4.3'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}

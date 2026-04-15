@@ -20,6 +20,7 @@ subprojects {
 
     // Only apply publishing plugins to modules with actual code
     def publishableModules = ['cleanconfig-core', 'cleanconfig-serialization',
+                               'cleanconfig-hocon',
                                'cleanconfig-spring-boot-starter', 'cleanconfig-scala',
                                'cleanconfig-examples']
     def shouldPublish = publishableModules.contains(project.name)
