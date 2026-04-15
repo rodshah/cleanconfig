@@ -14,6 +14,7 @@ def scalaLibraryVersion = '2.13'
 dependencies {
     implementation project(':cleanconfig-core')
     implementation project(':cleanconfig-serialization')
+    implementation project(':cleanconfig-hocon')
     implementation project(':cleanconfig-scala')
     implementation project(':cleanconfig-spring-boot-starter')
 
