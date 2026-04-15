@@ -67,6 +67,8 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     environment: production  # Requires approval in GitHub settings
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -167,13 +169,15 @@ jobs:
     if: github.event.inputs.dry-run != 'true'
 
     steps:
-      - name: Checkout code
+      - name: Checkout main branch
         uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update version to next SNAPSHOT
         run: |
           CURRENT_VERSION="${{ needs.release.outputs.version }}"
-          # Increment patch version
           IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
           MAJOR="${VERSION_PARTS[0]}"
           MINOR="${VERSION_PARTS[1]}"
@@ -182,7 +186,7 @@ jobs:
           NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-SNAPSHOT"
 
           sed -i "s/version=.*/version=$NEXT_VERSION/" gradle.properties
-          echo "📝 Updated version to $NEXT_VERSION"
+          echo "Updated version to $NEXT_VERSION"
 
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
