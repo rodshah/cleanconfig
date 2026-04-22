@@ -4,6 +4,7 @@ Idiomatic Scala wrapper for CleanConfig with type-safe DSL and functional progra
 
 ## Features
 
+- **ConfigLoader**: Load validated config directly into Scala case classes
 - **Scala-Friendly DSL**: Named parameters instead of Java builder pattern
 - **Type Safety**: Full Scala type system integration
 - **Operator Overloading**: Use `&&` and `||` for validation rule composition
@@ -16,12 +17,12 @@ Idiomatic Scala wrapper for CleanConfig with type-safe DSL and functional progra
 
 **Gradle**:
 ```groovy
-implementation 'com.cleanconfig:cleanconfig-scala:0.1.0-SNAPSHOT'
+implementation 'com.cleanconfig:cleanconfig-scala:0.3.0-SNAPSHOT'
 ```
 
 **SBT**:
 ```scala
-libraryDependencies += "com.cleanconfig" %% "cleanconfig-scala" % "0.1.0-SNAPSHOT"
+libraryDependencies += "com.cleanconfig" %% "cleanconfig-scala" % "0.3.0-SNAPSHOT"
 ```
 
 **Maven**:
@@ -29,17 +30,77 @@ libraryDependencies += "com.cleanconfig" %% "cleanconfig-scala" % "0.1.0-SNAPSHO
 <dependency>
     <groupId>com.cleanconfig</groupId>
     <artifactId>cleanconfig-scala_2.13</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 </dependency>
 ```
 
-## Quick Start
+## ConfigLoader — Case Class Binding
+
+Load a `Map[String, String]` directly into typed, validated Scala case classes. Replaces the manual define-register-validate-extract workflow.
 
 ```scala
 import com.cleanconfig.scala._
+import com.cleanconfig.scala.ConfigLoader._
 import com.cleanconfig.scala.RuleOps._
 
-implicit val integerClass: Class[Integer] = classOf[Integer]
+// Define case classes
+case class DbConfig(url: String, maxPool: Int)
+case class AppConfig(name: String, port: Int, db: DbConfig, desc: Option[String])
+
+// Define loaders with validation rules and defaults
+implicit val dbLoader: ConfigLoader[DbConfig] = ConfigLoader.build(
+  field[String]("url", Rules.notBlank && Rules.startsWith("jdbc:")),
+  field[Int]("max.pool", Rules.integerBetween(1, 100)).withDefault(10)
+)(DbConfig.apply)
+
+implicit val appLoader: ConfigLoader[AppConfig] = ConfigLoader.build(
+  field[String]("app.name", Rules.notBlank),
+  field[Int]("app.port", Rules.port).withDefault(8080),
+  nested[DbConfig]("db."),         // strips "db." prefix, delegates to dbLoader
+  optional[String]("app.desc")     // missing → None, present → Some(value)
+)(AppConfig.apply)
+
+// Load — all errors accumulated, not fail-fast
+appLoader.load(Map(
+  "app.name" -> "my-service",
+  "db.url"   -> "jdbc:pg://localhost/db"
+))
+// Right(AppConfig("my-service", 8080, DbConfig("jdbc:pg://localhost/db", 10), None))
+```
+
+**Field types:**
+
+| DSL method | Behavior |
+|-----------|----------|
+| `field[T]("key")` | Required, fails if missing (unless `.withDefault(v)`) |
+| `field[T]("key", rule)` | Required with validation rule |
+| `optional[T]("key")` | `None` if missing, `Some(v)` if present |
+| `optional[T]("key", rule)` | Validates only when present |
+| `nested[T]("prefix.")` | Delegates to implicit `ConfigLoader[T]`, strips prefix |
+| `listField[T]("key")` | Parses HOCON inline (`[a, b]`), comma-separated, or indexed keys (`key.0`, `key.1`) |
+| `listField[T]("key", rule)` | List with per-element validation rule |
+
+**Supported types:** `String`, `Int`, `Long`, `Double`, `Float`, `Boolean`, `Short`, `Byte`, plus `URL`, `URI`, `Path`, `Duration`, `LocalDate`, `LocalDateTime`, `Instant`, `BigDecimal`, `BigInteger`.
+
+**Error accumulation:** All fields are validated independently. If multiple fields fail, all errors are returned:
+
+```scala
+appLoader.load(Map("app.name" -> "", "app.port" -> "99999", "db.url" -> "bad")) match {
+  case Left(errors) => errors.foreach(e => println(s"[${e.propertyName}] ${e.message}"))
+  // [app.name] Required property 'app.name' is missing
+  // [app.port] Value must be between 1 and 65535
+  // [db.url] Value must start with: jdbc:
+  case Right(config) => // use config
+}
+```
+
+See [ConfigLoaderExample.scala](../cleanconfig-examples/src/main/scala/com/cleanconfig/examples/scala/ConfigLoaderExample.scala) for more examples.
+
+## Property DSL (Fine-Grained API)
+
+The Property DSL gives fine-grained control over individual property definitions, registries, and validators:
+
+```scala
 implicit val stringClass: Class[String] = classOf[String]
 
 // Define properties with named parameters
@@ -112,6 +173,7 @@ val value: Option[String] = context.getProperty("key")
 │        Your Scala Application           │
 │                                          │
 │  Uses idiomatic Scala DSL:              │
+│  - ConfigLoader (case class binding)    │
 │  - Named parameters                     │
 │  - Operator overloading (&&, ||)        │
 │  - Scala collections (List, Map)        │
@@ -122,6 +184,7 @@ val value: Option[String] = context.getProperty("key")
 ┌─────────────────────────────────────────┐
 │      CleanConfig Scala Wrappers         │
 │                                          │
+│  - ConfigLoader / FieldDef / FieldType  │
 │  - Property (Scala DSL)                 │
 │  - Rules (operator overloading)         │
 │  - PropertyRegistry.Builder             │
@@ -135,8 +198,8 @@ val value: Option[String] = context.getProperty("key")
 │                                          │
 │  - PropertyDefinition                   │
 │  - ValidationRule                       │
+│  - TypeConverterRegistry               │
 │  - PropertyRegistry                     │
-│  - Type converters                      │
 └─────────────────────────────────────────┘
 ```
 
@@ -146,29 +209,27 @@ val value: Option[String] = context.getProperty("key")
 `notBlank`, `minLength(n)`, `maxLength(n)`, `pattern(regex)`, `email`, `url`, `startsWith(prefix)`, `endsWith(suffix)`, `contains(substring)`
 
 ### Numeric Rules
-`positive`, `negative`, `nonNegative`, `integerBetween(min, max)`, `longBetween(min, max)`, `doubleBetween(min, max)`, `port`
+`positive`, `negative`, `nonNegative`, `integerBetween(min, max)`, `longBetween(min, max)`, `between(min, max)`, `port`
 
 ### File System Rules
-`fileExists`, `readable`, `writable`, `directory`, `regularFile`
-
-### URL/URI Rules
-`urlWithProtocol(protocol)`, `uriWithScheme(scheme)`
-
-### Time/Duration Rules
-`positiveDuration`, `durationAtLeast(min)`, `durationAtMost(max)`, `inPast`, `inFuture`, `dateBefore(date)`, `dateAfter(date)`
+`fileExists`, `directoryExists`, `readable`, `writable`, `isDirectory`, `isFile`
 
 ### Custom Rules
 ```scala
 val evenRule = Rules.custom[Int]("Must be even")(n => n % 2 == 0)
 ```
 
+See [Validation Rules Reference](../docs/validation-rules.md) for the full catalog (40+ rules).
+
 ## Examples
 
-See [ScalaDslExample.scala](src/main/scala/com/cleanconfig/scala/examples/ScalaDslExample.scala) for a comprehensive example demonstrating all features.
+- [ConfigLoaderExample.scala](../cleanconfig-examples/src/main/scala/com/cleanconfig/examples/scala/ConfigLoaderExample.scala) — Case class binding with nested, optional, defaults, and error accumulation
+- [ScalaDslExample.scala](../cleanconfig-examples/src/main/scala/com/cleanconfig/examples/scala/ScalaDslExample.scala) — Property DSL with registry and validator
 
-Run the example:
+Run examples:
 ```bash
-./gradlew :cleanconfig-scala:runExample
+./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.scala.ConfigLoaderExample
+./gradlew :cleanconfig-examples:run -PmainClass=com.cleanconfig.examples.scala.ScalaDslExample
 ```
 
 ## Testing
@@ -185,7 +246,7 @@ Run the example:
 
 - **Scala Version**: 2.13.x
 - **Java Version**: 11+
-- **CleanConfig Core**: 0.1.0-SNAPSHOT
+- **CleanConfig Core**: 0.3.0-SNAPSHOT
 
 ## Documentation
 

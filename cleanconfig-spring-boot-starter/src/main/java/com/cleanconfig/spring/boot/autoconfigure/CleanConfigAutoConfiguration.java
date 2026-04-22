@@ -54,7 +54,7 @@ import java.util.Map;
 @EnableConfigurationProperties(CleanConfigProperties.class)
 public class CleanConfigAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
 
-    private static final Logger log = LoggerFactory.getLogger(CleanConfigAutoConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CleanConfigAutoConfiguration.class);
 
     private final ApplicationContext applicationContext;
     private final Environment environment;
@@ -85,11 +85,11 @@ public class CleanConfigAutoConfiguration implements ApplicationListener<Context
                 (Map) applicationContext.getBeansOfType(PropertyDefinition.class);
 
         if (definitions.isEmpty()) {
-            log.warn("No PropertyDefinition beans found. CleanConfig validation will not be active.");
+            LOG.warn("No PropertyDefinition beans found. CleanConfig validation will not be active.");
             return PropertyRegistry.builder().build();
         }
 
-        log.info("Found {} PropertyDefinition beans", definitions.size());
+        LOG.info("Found {} PropertyDefinition beans", definitions.size());
 
         PropertyRegistryBuilder builder = PropertyRegistry.builder();
         definitions.values().forEach(builder::register);
@@ -152,10 +152,10 @@ public class CleanConfigAutoConfiguration implements ApplicationListener<Context
                 throw new IllegalStateException(
                         "CleanConfig validation failed:\n" + formattedErrors);
             } else if (properties.getValidation().isLogWarnings()) {
-                log.warn("CleanConfig validation warnings:\n{}", formattedErrors);
+                LOG.warn("CleanConfig validation warnings:\n{}", formattedErrors);
             }
         } else {
-            log.info("CleanConfig validation passed: {} properties validated", registry.getAllProperties().size());
+            LOG.info("CleanConfig validation passed: {} properties validated", registry.getAllProperties().size());
         }
     }
 }

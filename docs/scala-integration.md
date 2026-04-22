@@ -6,6 +6,86 @@ Idiomatic Scala wrapper for CleanConfig with type-safe DSL and functional progra
 
 See [cleanconfig-scala README](../cleanconfig-scala/README.md) for installation and basic usage.
 
+## ConfigLoader — Case Class Binding
+
+`ConfigLoader[A]` loads a `Map[String, String]` directly into a typed, validated Scala case class. It replaces the manual define-register-validate-extract workflow when your goal is to populate case classes from config.
+
+### Before / After
+
+**Before (manual 4-step workflow):**
+```scala
+// 1. Define properties
+val port = Property[Integer](name = "port", validationRule = Some(Rules.port), defaultValue = Some(8080))
+val name = Property[String](name = "name", validationRule = Some(Rules.notBlank))
+// 2. Register
+val registry = PropertyRegistry().register(port).register(name).build()
+// 3. Validate
+val result = PropertyValidator(registry).validate(configMap)
+// 4. Manually extract
+if (result.isValid) ServerConfig(configMap("name"), configMap("port").toInt)
+```
+
+**After (ConfigLoader):**
+```scala
+import com.cleanconfig.scala.ConfigLoader._
+
+case class ServerConfig(name: String, port: Int)
+
+implicit val loader: ConfigLoader[ServerConfig] = ConfigLoader.build(
+  field[String]("name", Rules.notBlank),
+  field[Int]("port", Rules.port).withDefault(8080)
+)(ServerConfig.apply)
+
+val result: Either[List[ValidationError], ServerConfig] = loader.load(configMap)
+```
+
+### Field Types
+
+| Method | Behavior |
+|--------|----------|
+| `field[T]("key")` | Required. Fails if key is missing (unless `.withDefault(v)` is set) |
+| `field[T]("key", rule)` | Required with validation |
+| `field[T]("key", rule).withDefault(v)` | Uses `v` if key is absent; validates if key is present |
+| `optional[T]("key")` | `None` if missing, `Some(v)` if present |
+| `optional[T]("key", rule)` | Validates only when present |
+| `nested[T]("prefix.")` | Delegates to implicit `ConfigLoader[T]`, strips prefix from keys |
+| `listField[T]("key")` | Parses HOCON inline (`[a, b]`), comma-separated, or indexed keys (`key.0`, `key.1`) |
+| `listField[T]("key", rule)` | List with per-element validation. Errors reference position: `key[2]` |
+
+### Nested Case Classes
+
+```scala
+case class DbConfig(url: String, maxPool: Int)
+case class AppConfig(name: String, db: DbConfig)
+
+implicit val dbLoader: ConfigLoader[DbConfig] = ConfigLoader.build(
+  field[String]("url", Rules.notBlank),
+  field[Int]("max.pool").withDefault(10)
+)(DbConfig.apply)
+
+implicit val appLoader: ConfigLoader[AppConfig] = ConfigLoader.build(
+  field[String]("app.name", Rules.notBlank),
+  nested[DbConfig]("db.")   // "db.url" → "url", "db.max.pool" → "max.pool"
+)(AppConfig.apply)
+```
+
+Nesting composes to arbitrary depth. Errors from nested loaders are prefixed back (e.g., `db.url`).
+
+### Error Accumulation
+
+All fields are validated independently (applicative, not monadic). If 5 fields fail, you get 5 errors:
+
+```scala
+loader.load(badProps) match {
+  case Left(errors) => errors.foreach(e => println(s"[${e.propertyName}] ${e.message}"))
+  case Right(config) => // use config
+}
+```
+
+### Supported Types
+
+`String`, `Int`, `Long`, `Double`, `Float`, `Boolean`, `Short`, `Byte`, `URL`, `URI`, `Path`, `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `BigDecimal`, `BigInteger`.
+
 ## Key Differences from Java API
 
 ### Property Definition
